@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.15...3.31)
+
+project(
+    elevator
+    VERSION 1.0
+    DESCRIPTION "elevator simulation / controls"
+    LANGUAGES CXX)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+include(cmake/PreventInsource.cmake)
+
+include(Dependencies.cmake)
+setup_dependencies()
+
+add_subdirectory(src)
