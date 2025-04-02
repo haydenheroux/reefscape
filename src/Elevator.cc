@@ -32,6 +32,10 @@ VoltageCoefficient Elevator::voltage_coefficient() const {
          (motor_.resistance_ * constants_.mass_ * constants_.drum_radius_);
 }
 
+VoltageUnit Elevator::oppose_steady_state(AccelerationUnit acceleration) const {
+  return -acceleration / voltage_coefficient();
+}
+
 ForceUnit Elevator::force(VelocityUnit velocity, VoltageUnit voltage) const {
   ForceUnit voltage_force =
       (constants_.gear_ratio_ * motor_.torque_constant_ * voltage) /

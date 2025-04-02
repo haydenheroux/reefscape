@@ -18,9 +18,10 @@ int main() {
   Elevator elevator{constants, krakenX60 * 2};
 
   TimeUnit sim_time_step = (milli(seconds))(5);
+  AccelerationUnit gravity = (meters / squared(second))(-9.81);
 
   ElevatorSim sim{elevator, sim_time_step};
-  sim.input_.set_acceleration((meters / squared(second))(-9.81));
+  sim.input_.set_acceleration(gravity);
 
   InitWindow(kWindowWidth.in(pixels), kWindowHeight.in(pixels),
              "reefscape elevator simulator");
@@ -30,14 +31,30 @@ int main() {
   TimeUnit sim_time = seconds(0);
   TimeUnit max_render_time = (milli(seconds))(25);
 
+  auto kP = (volts / meter)(96.0);
+
   while (!WindowShouldClose()) {
     TimeUnit elapsed_time = seconds(GetFrameTime());
     if (elapsed_time > max_render_time)
       elapsed_time = max_render_time;
     render_time += elapsed_time;
     while (sim_time < render_time) {
-      VoltageUnit voltage =
-          elevator.limited_voltage(sim.state_.velocity(), volts(12));
+      DisplacementUnit setpoint;
+
+      TimeUnit time = au::fmod(sim_time, seconds(6));
+      if (time <= seconds(2)) {
+        setpoint = meters(0);
+      } else if (time >= seconds(4)) {
+        setpoint = meters(1.25);
+      } else {
+        setpoint = kTotalTravel;
+      }
+
+      DisplacementUnit error = setpoint - sim.state_.position();
+      VoltageUnit voltage = error * kP;
+      voltage += elevator.oppose_steady_state(gravity);
+      voltage = au::clamp(voltage, volts(-12), volts(12));
+      voltage = elevator.limited_voltage(sim.state_.velocity(), voltage);
       sim.update(voltage);
       sim_time += sim_time_step;
     }

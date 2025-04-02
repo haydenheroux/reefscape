@@ -36,6 +36,8 @@ struct Elevator {
 
   VoltageCoefficient voltage_coefficient() const;
 
+  VoltageUnit oppose_steady_state(AccelerationUnit acceleration) const;
+
   ForceUnit force(VelocityUnit velocity, VoltageUnit voltage) const;
 
   CurrentUnit current(VelocityUnit velocity, VoltageUnit voltage) const;
