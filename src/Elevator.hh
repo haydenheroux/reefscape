@@ -9,11 +9,13 @@ struct ElevatorConstants {
   DisplacementUnit drum_radius_;
   MassUnit mass_;
   CurrentUnit max_current_;
+  DisplacementUnit max_travel_;
 
   ElevatorConstants(RatioUnit gear_ratio, DisplacementUnit drum_radius,
-                    MassUnit mass, CurrentUnit max_current)
+                    MassUnit mass, CurrentUnit max_current,
+                    DisplacementUnit max_travel)
       : gear_ratio_(gear_ratio), drum_radius_(drum_radius), mass_(mass),
-        max_current_(max_current) {};
+        max_current_(max_current), max_travel_(max_travel) {};
 };
 
 struct Elevator {
@@ -97,6 +99,7 @@ public:
   TimeUnit time_step_;
   ElevatorState state_;
   ElevatorInput input_;
+  Elevator elevator_;
 
   ElevatorSim(const Elevator &elevator, TimeUnit time_step);
 

@@ -1,33 +1,15 @@
 #include "render.hh"
+#include <cassert>
 
 void DrawElevatorStages(DisplacementUnit position) {
-  DisplacementUnit carriage_inside_stage_three;
-  if (position < kCarriageTravel) {
-    carriage_inside_stage_three =
-        kCarriageToStageThreeAtBottom - position;
-    position = meters(0);
-  } else {
-    carriage_inside_stage_three = kCarriageToStageThreeAtTop;
-    position -= kCarriageTravel;
-  }
-  DisplacementUnit stage_three_inside_stage_two;
-  if (position < kStageThreeTravel) {
-    stage_three_inside_stage_two =
-        kStageThreeToStageTwoAtBottom - position;
-    position = meters(0);
-  } else {
-    stage_three_inside_stage_two = kStageThreeToStageTwoAtTop;
-    position -= kStageThreeTravel;
-  }
-  DisplacementUnit stage_two_inside_stage_one;
-  if (position < kStageTwoTravel) {
-    stage_two_inside_stage_one =
-        kStageTwoToStageOneAtBottom - position;
-    position = meters(0);
-  } else {
-    stage_two_inside_stage_one = kStageTwoToStageOneAtTop;
-    position -= kStageTwoTravel;
-  }
+  double travel_percent = position / kTotalTravel;
+
+  DisplacementUnit carriage_inside_stage_three =
+      kCarriageToStageThreeAtBottom - travel_percent * kCarriageTravel;
+  DisplacementUnit stage_three_inside_stage_two =
+      kStageThreeToStageTwoAtBottom - travel_percent * kStageThreeTravel;
+  DisplacementUnit stage_two_inside_stage_one =
+      kStageTwoToStageOneAtBottom - travel_percent * kStageTwoTravel;
 
   DisplacementUnit stage_one_position =
       kWindowHeight - kStageOneHeight - kStageOneToFloor;
@@ -65,14 +47,18 @@ void DrawElevatorStages(DisplacementUnit position) {
   carriage.height = kCarriageHeight.in(pixels);
 
   Rectangle manipulator;
-  manipulator.x = (kWindowWidth / 2 - manipulator_width / 2).in(pixels);
+  manipulator.x = (kWindowWidth / 2 - kManipulatorWidth / 2).in(pixels);
   manipulator.y = manipulator_position.in(pixels);
-  manipulator.width = manipulator_width.in(pixels);
-  manipulator.height = manipulator_height.in(pixels);
+  manipulator.width = kManipulatorWidth.in(pixels);
+  manipulator.height = kManipulatorHeight.in(pixels);
 
-  DrawRectangleLinesEx(stage_one, kElevatorStageThickness.in(pixels), k5112Green);
-  DrawRectangleLinesEx(stage_two, kElevatorStageThickness.in(pixels), k5112Green);
-  DrawRectangleLinesEx(stage_three, kElevatorStageThickness.in(pixels), k5112Green);
-  DrawRectangleLinesEx(carriage, kElevatorStageThickness.in(pixels), k5112Green);
+  DrawRectangleLinesEx(stage_one, kElevatorStageThickness.in(pixels),
+                       k5112Green);
+  DrawRectangleLinesEx(stage_two, kElevatorStageThickness.in(pixels),
+                       k5112Green);
+  DrawRectangleLinesEx(stage_three, kElevatorStageThickness.in(pixels),
+                       k5112Green);
+  DrawRectangleLinesEx(carriage, kElevatorStageThickness.in(pixels),
+                       k5112Green);
   DrawRectangleLinesEx(manipulator, kManipulatorThickness.in(pixels), GRAY);
 }

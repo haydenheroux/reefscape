@@ -82,7 +82,7 @@ InputMatrix Elevator::input_matrix() const {
 
 ElevatorSim::ElevatorSim(const Elevator &elevator, TimeUnit time_step)
     : time_step_(time_step), state_(meters(0), meters_per_second(0)),
-      input_(volts(0), (meters / squared(second))(0)) {
+      input_(volts(0), (meters / squared(second))(0)), elevator_(elevator) {
   continuous_system_ << 0, 1, 0,
       elevator.velocity_coefficient().in(velocity_coefficient);
   continuous_input_ << 0, 0,
@@ -98,4 +98,10 @@ ElevatorSim::ElevatorSim(const Elevator &elevator, TimeUnit time_step)
 void ElevatorSim::update(VoltageUnit voltage) {
   input_.set_voltage(voltage);
   state_ = discrete_system_ * state_.state_ + discrete_input_ * input_.input_;
+  // TODO Attempt to find a cleaner clamping method
+  if (state_.position() > elevator_.constants_.max_travel_) {
+    state_.set_position(elevator_.constants_.max_travel_);
+  } else if (state_.position() < meters(0)) {
+    state_.set_position(meters(0));
+  }
 }

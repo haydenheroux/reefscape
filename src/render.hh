@@ -36,11 +36,13 @@ const DisplacementUnit kCarriageHeight = inches(6.0);
 const DisplacementUnit kCarriageToStageThreeAtBottom = inches(23.5);
 const DisplacementUnit kCarriageToStageThreeAtTop = inches(1.5);
 const DisplacementUnit kCarriageTravel =
-    au::abs(kCarriageToStageThreeAtBottom -
-            kCarriageToStageThreeAtTop);
+    au::abs(kCarriageToStageThreeAtBottom - kCarriageToStageThreeAtTop);
 
-const DisplacementUnit manipulator_width = inches(6.472);
-const DisplacementUnit manipulator_height = inches(13.774);
+const DisplacementUnit kManipulatorWidth = inches(6.472);
+const DisplacementUnit kManipulatorHeight = inches(13.774);
 const DisplacementUnit kManipulatorToCarriage = inches(9.543);
+
+const DisplacementUnit kTotalTravel =
+    kCarriageTravel + kStageThreeTravel + kStageTwoTravel;
 
 void DrawElevatorStages(DisplacementUnit position);

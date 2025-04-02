@@ -13,7 +13,7 @@ int main() {
                   amperes(2)};
 
   ElevatorConstants constants{gear_ratio(5), 0.5 * inches(1.273),
-                              pounds_mass(30), amperes(120)};
+                              pounds_mass(30), amperes(120), kTotalTravel};
 
   Elevator elevator{constants, krakenX60 * 2};
 
@@ -38,11 +38,7 @@ int main() {
     while (sim_time < render_time) {
       VoltageUnit voltage =
           elevator.limited_voltage(sim.state_.velocity(), volts(12));
-      if (sim_time < seconds(0.85)) {
-        sim.update(voltage);
-      } else {
-        sim.update(volts(0));
-      }
+      sim.update(voltage);
       sim_time += sim_time_step;
     }
 
