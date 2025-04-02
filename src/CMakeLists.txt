@@ -5,6 +5,7 @@ target_link_libraries(
     PRIVATE
     au
     Eigen3::Eigen
+    raylib
 )
 
 target_compile_features(main PRIVATE cxx_std_23)

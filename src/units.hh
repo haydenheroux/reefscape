@@ -20,7 +20,8 @@ using TimeUnit = QuantityD<Seconds>;
 
 using DisplacementUnit = QuantityD<Meters>;
 using VelocityUnit = QuantityD<decltype(Meters{} / Seconds{})>;
-constexpr auto meters_per_second = QuantityMaker<decltype(Meters{} / Seconds{})>{};
+constexpr auto meters_per_second =
+    QuantityMaker<decltype(Meters{} / Seconds{})>{};
 using AccelerationUnit = QuantityD<decltype(Meters{} / squared(Seconds{}))>;
 
 using AngleUnit = QuantityD<Radians>;
@@ -46,8 +47,16 @@ using ForceUnit = QuantityD<Newtons>;
 
 using VelocityCoefficient = QuantityD<decltype((Meters{} / squared(Seconds{})) /
                                                (Meters{} / Seconds{}))>;
-constexpr auto velocity_coefficient = (meters / squared(second)) / (meters / second);
+constexpr auto velocity_coefficient =
+    (meters / squared(second)) / (meters / second);
 
 using VoltageCoefficient =
     QuantityD<decltype((Meters{} / squared(Seconds{})) / (Volts{}))>;
 constexpr auto voltage_coefficient = (meters / squared(second)) / (volt);
+
+struct Pixels : decltype(Meters{} / mag<256>()) {
+  static constexpr const char label[] = "px";
+};
+constexpr auto pixel = SingularNameFor<Pixels>{};
+constexpr auto pixels = QuantityMaker<Pixels>{};
+constexpr auto pixels_pt = QuantityPointMaker<Pixels>{};

@@ -15,4 +15,15 @@ function(setup_dependencies)
         find_package(Eigen3 3.3 REQUIRED NO_MODULE)
     endif()
 
+    if (NOT TARGET raylib)
+        FetchContent_Declare(
+            raylib
+            GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
+            GIT_TAG "master"
+            GIT_PROGRESS TRUE
+        )
+
+        FetchContent_MakeAvailable(raylib)
+    endif()
+
 endfunction()
