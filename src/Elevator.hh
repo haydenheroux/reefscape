@@ -4,106 +4,105 @@
 #include "Motor.hh"
 #include "units.hh"
 
-struct ElevatorConstants {
-  RatioUnit gear_ratio_;
-  DisplacementUnit drum_radius_;
-  MassUnit mass_;
-  CurrentUnit max_current_;
-  DisplacementUnit max_travel_;
-
-  ElevatorConstants(RatioUnit gear_ratio, DisplacementUnit drum_radius,
-                    MassUnit mass, CurrentUnit max_current,
-                    DisplacementUnit max_travel)
-      : gear_ratio_(gear_ratio), drum_radius_(drum_radius), mass_(mass),
-        max_current_(max_current), max_travel_(max_travel) {};
-};
-
 struct Elevator {
-  ElevatorConstants constants_;
-  Motor motor_;
+  RatioUnit gear_ratio;
+  DisplacementUnit drum_radius;
+  MassUnit mass;
+  CurrentUnit max_current;
+  DisplacementUnit max_travel;
+  Motor motor;
 
-  Elevator(ElevatorConstants elevator, Motor motor)
-      : constants_(elevator), motor_(motor) {};
+  Elevator(RatioUnit gear_ratio, DisplacementUnit drum_radius, MassUnit mass,
+           CurrentUnit max_current, DisplacementUnit max_travel, Motor motor)
+      : gear_ratio(gear_ratio), drum_radius(drum_radius), mass(mass),
+        max_current(max_current), max_travel(max_travel), motor(motor) {};
 
-  AngularVelocityUnit motor_velocity(VelocityUnit velocity) const;
+  AngularVelocityUnit MotorVelocity(VelocityUnit velocity) const;
 
-  AccelerationUnit acceleration(VelocityUnit velocity,
+  AccelerationUnit Acceleration(VelocityUnit velocity,
                                 VoltageUnit voltage) const;
 
-  AccelerationUnit maximum_acceleration() const;
+  AccelerationUnit MaximumAcceleration() const;
 
-  VelocityCoefficient velocity_coefficient() const;
+  VelocityCoefficientUnit VelocityCoefficient() const;
 
-  VoltageCoefficient voltage_coefficient() const;
+  VoltageCoefficientUnit VoltageCoefficient() const;
 
-  VoltageUnit oppose_steady_state(AccelerationUnit acceleration) const;
+  VoltageUnit OpposingVoltage(AccelerationUnit acceleration) const;
 
-  ForceUnit force(VelocityUnit velocity, VoltageUnit voltage) const;
+  ForceUnit Force(VelocityUnit velocity, VoltageUnit voltage) const;
 
-  CurrentUnit current(VelocityUnit velocity, VoltageUnit voltage) const;
+  CurrentUnit Current(VelocityUnit velocity, VoltageUnit voltage) const;
 
-  VoltageUnit limited_voltage(VelocityUnit velocity, VoltageUnit voltage) const;
-
-  SystemMatrix system_matrix() const;
-
-  InputMatrix input_matrix() const;
+  VoltageUnit LimitVoltage(VelocityUnit velocity, VoltageUnit voltage) const;
 };
 
 struct ElevatorState {
-  Eigen::Vector<double, 2> state_;
+  Eigen::Vector<double, 2> state;
 
   ElevatorState(DisplacementUnit position, VelocityUnit velocity) {
-    set_position(position);
-    set_velocity(velocity);
+    SetPosition(position);
+    SetVelocity(velocity);
   }
   ElevatorState &operator=(const Eigen::Vector<double, 2> &state) {
-    state_[0] = state[0];
-    state_[1] = state[1];
+    this->state[0] = state[0];
+    this->state[1] = state[1];
     return *this;
   }
 
-  DisplacementUnit position() const { return meters(state_[0]); }
-  VelocityUnit velocity() const { return meters_per_second(state_[1]); }
-  void set_position(DisplacementUnit position) {
-    state_[0] = position.in(meters);
+  DisplacementUnit Position() const { return meters(state[0]); }
+  VelocityUnit Velocity() const { return (meters / second)(state[1]); }
+  void SetPosition(DisplacementUnit position) {
+    state[0] = position.in(meters);
   }
-  void set_velocity(VelocityUnit velocity) {
-    state_[1] = velocity.in(meters / second);
+  void SetVelocity(VelocityUnit velocity) {
+    state[1] = velocity.in(meters / second);
   }
 };
 
 struct ElevatorInput {
-  Eigen::Vector<double, 2> input_;
+  Eigen::Vector<double, 2> input;
 
   ElevatorInput(VoltageUnit voltage, AccelerationUnit acceleration) {
-    set_voltage(voltage);
-    set_acceleration(acceleration);
+    SetVoltage(voltage);
+    SetAcceleration(acceleration);
   }
 
-  VoltageUnit voltage() const { return volts(input_[0]); }
-  AccelerationUnit acceleration() {
-    return (meters / squared(second))(input_[1]);
+  VoltageUnit Voltage() const { return volts(input[0]); }
+  AccelerationUnit Acceleration() {
+    return (meters / squared(second))(input[1]);
   }
-  void set_voltage(VoltageUnit voltage) { input_[0] = voltage.in(volts); }
-  void set_acceleration(AccelerationUnit acceleration) {
-    input_[1] = acceleration.in(meters / squared(second));
+  void SetVoltage(VoltageUnit voltage) { input[0] = voltage.in(volts); }
+  void SetAcceleration(AccelerationUnit acceleration) {
+    input[1] = acceleration.in(meters / squared(second));
   }
 };
 
 class ElevatorSim {
-private:
-  SystemMatrix continuous_system_;
-  InputMatrix continuous_input_;
-  SystemMatrix discrete_system_;
-  InputMatrix discrete_input_;
-
 public:
+  ElevatorSim(const Elevator &elevator, TimeUnit time_step);
+
+  DisplacementUnit Position() const { return state_.Position(); }
+
+  VelocityUnit Velocity() const { return state_.Velocity(); }
+
+  VoltageUnit Voltage() const { return input_.Voltage(); }
+
+  void SetGravity(AccelerationUnit gravity) { input_.SetAcceleration(gravity); }
+
+  void Update(VoltageUnit voltage);
+
+  // TODO
+  const static int kNumStates = 2;
+  const static int kNumInputs = 2;
+
+private:
+  SystemMatrix<kNumStates> continuous_system_;
+  InputMatrix<kNumStates, kNumInputs> continuous_input_;
+  SystemMatrix<kNumStates> discrete_system_;
+  InputMatrix<kNumStates, kNumInputs> discrete_input_;
   TimeUnit time_step_;
   ElevatorState state_;
   ElevatorInput input_;
   Elevator elevator_;
-
-  ElevatorSim(const Elevator &elevator, TimeUnit time_step);
-
-  void update(VoltageUnit voltage);
 };

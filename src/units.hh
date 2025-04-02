@@ -6,7 +6,6 @@
 #include "au/units/amperes.hh"
 #include "au/units/grams.hh"
 #include "au/units/meters.hh"
-#include "au/units/minutes.hh"
 #include "au/units/newtons.hh"
 #include "au/units/ohms.hh"
 #include "au/units/radians.hh"
@@ -20,13 +19,10 @@ using TimeUnit = QuantityD<Seconds>;
 
 using DisplacementUnit = QuantityD<Meters>;
 using VelocityUnit = QuantityD<decltype(Meters{} / Seconds{})>;
-constexpr auto meters_per_second =
-    QuantityMaker<decltype(Meters{} / Seconds{})>{};
 using AccelerationUnit = QuantityD<decltype(Meters{} / squared(Seconds{}))>;
 
 using AngleUnit = QuantityD<Radians>;
 using AngularVelocityUnit = QuantityD<decltype(Radians{} / Seconds{})>;
-constexpr auto rpm = QuantityMaker<decltype(Revolutions{} / Minutes{})>{};
 using RatioUnit = QuantityD<decltype(Revolutions{} / Revolutions{})>;
 constexpr auto gear_ratio =
     QuantityMaker<decltype(Revolutions{} / Revolutions{})>{};
@@ -45,14 +41,12 @@ using TorqueConstantUnit =
     QuantityD<decltype(Newtons{} * Meters{} / Amperes{})>;
 using ForceUnit = QuantityD<Newtons>;
 
-using VelocityCoefficient = QuantityD<decltype((Meters{} / squared(Seconds{})) /
-                                               (Meters{} / Seconds{}))>;
-constexpr auto velocity_coefficient =
-    (meters / squared(second)) / (meters / second);
+using VelocityCoefficientUnit =
+    QuantityD<decltype((Meters{} / squared(Seconds{})) /
+                       (Meters{} / Seconds{}))>;
 
-using VoltageCoefficient =
+using VoltageCoefficientUnit =
     QuantityD<decltype((Meters{} / squared(Seconds{})) / (Volts{}))>;
-constexpr auto voltage_coefficient = (meters / squared(second)) / (volt);
 
 struct Pixels : decltype(Meters{} / mag<256>()) {
   static constexpr const char label[] = "px";
