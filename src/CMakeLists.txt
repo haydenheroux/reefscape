@@ -1,4 +1,4 @@
-add_executable(main main.cc Elevator.cc Eigen.cc)
+add_executable(main main.cc Elevator.cc Eigen.cc render.cc)
 
 target_link_libraries(
     main

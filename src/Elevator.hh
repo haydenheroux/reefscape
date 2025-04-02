@@ -69,12 +69,21 @@ struct ElevatorState {
 };
 
 struct ElevatorInput {
-  Eigen::Vector<double, 1> input_;
+  Eigen::Vector<double, 2> input_;
 
-  ElevatorInput(VoltageUnit voltage) { set_voltage(voltage); }
+  ElevatorInput(VoltageUnit voltage, AccelerationUnit acceleration) {
+    set_voltage(voltage);
+    set_acceleration(acceleration);
+  }
 
   VoltageUnit voltage() const { return volts(input_[0]); }
+  AccelerationUnit acceleration() {
+    return (meters / squared(second))(input_[1]);
+  }
   void set_voltage(VoltageUnit voltage) { input_[0] = voltage.in(volts); }
+  void set_acceleration(AccelerationUnit acceleration) {
+    input_[1] = acceleration.in(meters / squared(second));
+  }
 };
 
 class ElevatorSim {

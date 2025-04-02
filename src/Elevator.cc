@@ -82,11 +82,11 @@ InputMatrix Elevator::input_matrix() const {
 
 ElevatorSim::ElevatorSim(const Elevator &elevator, TimeUnit time_step)
     : time_step_(time_step), state_(meters(0), meters_per_second(0)),
-      input_(volts(0)) {
+      input_(volts(0), (meters / squared(second))(0)) {
   continuous_system_ << 0, 1, 0,
       elevator.velocity_coefficient().in(velocity_coefficient);
-  continuous_input_ << 0,
-      elevator.voltage_coefficient().in(voltage_coefficient);
+  continuous_input_ << 0, 0,
+      elevator.voltage_coefficient().in(voltage_coefficient), 1;
 
   auto continuous_matrices =
       std::make_pair(continuous_system_, continuous_input_);
