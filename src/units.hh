@@ -20,7 +20,7 @@ using TimeUnit = QuantityD<Seconds>;
 
 using DisplacementUnit = QuantityD<Meters>;
 using VelocityUnit = QuantityD<decltype(Meters{} / Seconds{})>;
-constexpr auto mps = QuantityMaker<decltype(Meters{} / Seconds{})>{};
+constexpr auto meters_per_second = QuantityMaker<decltype(Meters{} / Seconds{})>{};
 using AccelerationUnit = QuantityD<decltype(Meters{} / squared(Seconds{}))>;
 
 using AngleUnit = QuantityD<Radians>;

@@ -1,6 +1,4 @@
-add_executable(main main.cc)
-
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+add_executable(main main.cc Elevator.cc Eigen.cc)
 
 target_link_libraries(
     main

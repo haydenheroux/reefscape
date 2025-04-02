@@ -11,4 +11,8 @@ function(setup_dependencies)
         FetchContent_MakeAvailable(Au)
     endif()
 
+    if (NOT TARGET Eigen3::Eigen)
+        find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+    endif()
+
 endfunction()
