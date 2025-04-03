@@ -7,42 +7,48 @@
 
 const Color k5112Green = {0, 167, 74, 255};
 
-const DisplacementUnit kWindowWidth = inches(48.0);
-const DisplacementUnit kWindowHeight = inches(100.0);
+const DisplacementUnit kWindowWidth = meters(8);
+const DisplacementUnit kWindowHeight = meters(4.5);
 
-const DisplacementUnit kElevatorStageThickness = inches(1);
+const DisplacementUnit kTubeWidth = inches(1);
+const DisplacementUnit kTubeHeight = inches(2);
+const DisplacementUnit kThinTubeWidth = inches(1);
+const DisplacementUnit kThinTubeHeight = inches(1);
+
 const DisplacementUnit kManipulatorThickness = inches(0.236);
 
-const DisplacementUnit kStageOneToFloor = inches(3.0625);
-const DisplacementUnit kStageOneWidth = inches(26.0);
+const DisplacementUnit kStageOneToFloor = inches(3.72418);
+const DisplacementUnit kStageOneInnerWidth = inches(24.0);
 const DisplacementUnit kStageOneHeight = inches(25.0);
+const DisplacementUnit kStageOneStandoffLength = inches(2);
+const DisplacementUnit kStageOneStandoffRadius = inches(0.1875);
 
-const DisplacementUnit kStageTwoWidth = inches(23.0);
-const DisplacementUnit kStageTwoHeight = inches(27.0);
-const DisplacementUnit kStageTwoToStageOneAtBottom = inches(-2);
-const DisplacementUnit kStageTwoToStageOneAtTop = inches(-24.0);
+const DisplacementUnit kStageTwoToStageOneAtBottom = kTubeWidth;
+const DisplacementUnit kStageTwoToStageOneAtTop = inches(23);
 const DisplacementUnit kStageTwoTravel =
-    au::abs(kStageTwoToStageOneAtBottom - kStageTwoToStageOneAtTop);
+    au::abs(kStageTwoToStageOneAtTop - kStageTwoToStageOneAtBottom);
 
-const DisplacementUnit kStageThreeWidth = inches(20.0);
-const DisplacementUnit kStageThreeHeight = inches(30.5);
-const DisplacementUnit kStageThreeToStageTwoAtBottom = inches(-4.5);
-const DisplacementUnit kStageThreeToStageTwoAtTop = inches(-26.5);
+const DisplacementUnit kStageTwoInnerWidth = inches(21.0);
+const DisplacementUnit kStageTwoHeight = inches(27.0);
+const DisplacementUnit kStageTwoThinTubeLength = inches(4.0);
+
+const DisplacementUnit kStageThreeToStageTwoAtBottom = kTubeWidth;
+const DisplacementUnit kStageThreeToStageTwoAtTop = inches(23);
 const DisplacementUnit kStageThreeTravel =
-    au::abs(kStageThreeToStageTwoAtBottom - kStageThreeToStageTwoAtTop);
+    au::abs(kStageThreeToStageTwoAtTop - kStageThreeToStageTwoAtBottom);
 
-const DisplacementUnit kCarriageWidth = inches(17.0);
-const DisplacementUnit kCarriageHeight = inches(6.0);
-const DisplacementUnit kCarriageToStageThreeAtBottom = inches(23.5);
-const DisplacementUnit kCarriageToStageThreeAtTop = inches(1.5);
+const DisplacementUnit kStageThreeInnerWidth = inches(18.0);
+const DisplacementUnit kStageThreeHeight = inches(30.5);
+
+const DisplacementUnit kCarriageToStageThreeAtBottom = kTubeWidth;
+const DisplacementUnit kCarriageToStageThreeAtTop = inches(23);
 const DisplacementUnit kCarriageTravel =
-    au::abs(kCarriageToStageThreeAtBottom - kCarriageToStageThreeAtTop);
+    au::abs(kCarriageToStageThreeAtTop - kCarriageToStageThreeAtBottom);
 
-const DisplacementUnit kManipulatorWidth = inches(6.472);
-const DisplacementUnit kManipulatorHeight = inches(13.774);
-const DisplacementUnit kManipulatorToCarriage = inches(9.543);
+const DisplacementUnit kCarriageInnerWidth = inches(15.0);
+const DisplacementUnit kCarriageHeight = inches(6.0);
 
 const DisplacementUnit kTotalTravel =
-    kCarriageTravel + kStageThreeTravel + kStageTwoTravel;
+    kStageTwoTravel + kStageThreeTravel + kCarriageTravel;
 
 void DrawElevatorStages(DisplacementUnit position);

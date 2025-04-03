@@ -32,6 +32,19 @@ int main() {
 
   auto kP = (volts / meter)(96.0);
 
+  DisplacementUnit camera_height = kStageOneToFloor + kTotalTravel * 0.5;
+
+  Camera camera;
+  camera.position.x = meters(3).in(vu);
+  camera.position.y = camera_height.in(vu);
+  camera.position.z = meters(2).in(vu);
+  camera.target.x = meters(0).in(vu);
+  camera.target.y = camera_height.in(vu);
+  camera.target.z = meters(0).in(vu);
+  camera.up = (Vector3){0.0f, 1.0f, 0.0f};
+  camera.fovy = 45.0f;
+  camera.projection = CAMERA_PERSPECTIVE;
+
   while (!WindowShouldClose()) {
     TimeUnit elapsed_time = seconds(GetFrameTime());
     if (elapsed_time > max_render_time)
@@ -68,12 +81,14 @@ int main() {
         std::to_string(elapsed_time.in(milli(seconds))) + " ms";
 
     BeginDrawing();
-    ClearBackground(BLACK);
+    ClearBackground(WHITE);
+    BeginMode3D(camera);
     DrawElevatorStages(position);
-    DrawText(position_text.c_str(), 0, 0, 20, WHITE);
-    DrawText(velocity_text.c_str(), 0, 20, 20, WHITE);
-    DrawText(voltage_text.c_str(), 0, 40, 20, WHITE);
-    DrawText(elapsed_time_text.c_str(), 0, 60, 20, WHITE);
+    EndMode3D();
+    DrawText(position_text.c_str(), 0, 0, 20, BLACK);
+    DrawText(velocity_text.c_str(), 0, 20, 20, BLACK);
+    DrawText(voltage_text.c_str(), 0, 40, 20, BLACK);
+    DrawText(elapsed_time_text.c_str(), 0, 60, 20, BLACK);
     EndDrawing();
   }
 
