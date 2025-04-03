@@ -5,6 +5,8 @@
 #include "au/units/pounds_mass.hh"
 #include "au/units/volts.hh"
 #include "raylib.h"
+#define RLIGHTS_IMPLEMENTATION
+#include "raylights.h"
 #include "render.hh"
 #include "units.hh"
 #include <cmath>
@@ -23,6 +25,7 @@ int main() {
   ElevatorSim sim{elevator, sim_time_step};
   sim.SetGravity(gravity);
 
+  SetConfigFlags(FLAG_MSAA_4X_HINT);
   InitWindow(kWindowWidth.in(pixels), kWindowHeight.in(pixels),
              "reefscape elevator simulator");
 
@@ -44,6 +47,32 @@ int main() {
   camera.up = (Vector3){0.0f, 1.0f, 0.0f};
   camera.fovy = 45.0f;
   camera.projection = CAMERA_PERSPECTIVE;
+
+  Shader shader = LoadShader("shaders/lighting.vs", "shaders/lighting.fs");
+  shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+
+  int ambientLoc = GetShaderLocation(shader, "ambient");
+  SetShaderValue(shader, ambientLoc, (float[4]){0.1f, 0.1f, 0.1f, 1.0f},
+                 SHADER_UNIFORM_VEC4);
+
+  Vector3 origin{0, 0, 0};
+  DisplacementUnit light_distance = inches(48);
+  DisplacementUnit light_height = camera_height + inches(6);
+
+  Vector3 yellow{-light_distance.in<float>(vu), light_height.in<float>(vu),
+                 -light_distance.in<float>(vu)};
+  Vector3 red{light_distance.in<float>(vu), light_height.in<float>(vu),
+              light_distance.in<float>(vu)};
+  Vector3 green{-light_distance.in<float>(vu), light_height.in<float>(vu),
+                light_distance.in<float>(vu)};
+  Vector3 blue{light_distance.in<float>(vu), light_height.in<float>(vu),
+               -light_distance.in<float>(vu)};
+
+  Light lights[MAX_LIGHTS] = {0};
+  lights[0] = CreateLight(LIGHT_DIRECTIONAL, yellow, origin, YELLOW, shader);
+  lights[1] = CreateLight(LIGHT_DIRECTIONAL, red, origin, RED, shader);
+  lights[2] = CreateLight(LIGHT_DIRECTIONAL, green, origin, GREEN, shader);
+  lights[3] = CreateLight(LIGHT_DIRECTIONAL, blue, origin, BLUE, shader);
 
   while (!WindowShouldClose()) {
     TimeUnit elapsed_time = seconds(GetFrameTime());
@@ -80,15 +109,31 @@ int main() {
     std::string elapsed_time_text =
         std::to_string(elapsed_time.in(milli(seconds))) + " ms";
 
+    float cameraPos[3] = {camera.position.x, camera.position.y,
+                          camera.position.z};
+    SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos,
+                   SHADER_UNIFORM_VEC3);
+    for (int i = 0; i < MAX_LIGHTS; i++)
+      UpdateLightValues(shader, lights[i]);
+
     BeginDrawing();
-    ClearBackground(WHITE);
+    ClearBackground(BLACK);
     BeginMode3D(camera);
+    BeginShaderMode(shader);
     DrawElevatorStages(position);
+    EndShaderMode();
+    for (int i = 0; i < MAX_LIGHTS; i++) {
+      if (lights[i].enabled)
+        DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);
+      else
+        DrawSphereWires(lights[i].position, 0.2f, 8, 8,
+                        ColorAlpha(lights[i].color, 0.3f));
+    }
     EndMode3D();
-    DrawText(position_text.c_str(), 0, 0, 20, BLACK);
-    DrawText(velocity_text.c_str(), 0, 20, 20, BLACK);
-    DrawText(voltage_text.c_str(), 0, 40, 20, BLACK);
-    DrawText(elapsed_time_text.c_str(), 0, 60, 20, BLACK);
+    DrawText(position_text.c_str(), 0, 0, 20, WHITE);
+    DrawText(velocity_text.c_str(), 0, 20, 20, WHITE);
+    DrawText(voltage_text.c_str(), 0, 40, 20, WHITE);
+    DrawText(elapsed_time_text.c_str(), 0, 60, 20, WHITE);
     EndDrawing();
   }
 
