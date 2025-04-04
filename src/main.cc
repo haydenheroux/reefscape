@@ -133,9 +133,9 @@ int main() {
     BeginDrawing();
     ClearBackground(WHITE);
     BeginMode3D(camera);
-    BeginShaderMode(shader);
-    DrawElevatorStages(position);
-    EndShaderMode();
+    // BeginShaderMode(shader);
+    DrawRobot(position);
+    // EndShaderMode();
     DrawPlane(origin, Vector2{1000, 1000}, LIGHTGRAY);
     EndMode3D();
     DrawText(position_text.c_str(), 0, 0, 20, GRAY);

@@ -18,7 +18,15 @@ const DisplacementUnit kThinTubeHeight = inches(1);
 
 const DisplacementUnit kManipulatorThickness = inches(0.236);
 
-const DisplacementUnit kStageOneToFloor = inches(3.72418);
+const DisplacementUnit kBaseToFloor = inches(1.77);
+const DisplacementUnit kBaseSize = inches(26.0);
+const DisplacementUnit kBaseThickness = inches(0.244);
+
+const DisplacementUnit kFrameToBase = kBaseThickness;
+const DisplacementUnit kFrameTubeLength = inches(26);
+const DisplacementUnit kFrameTubeDistance = inches(12);
+
+const DisplacementUnit kStageOneToFrame = kTubeHeight;
 const DisplacementUnit kStageOneInnerWidth = inches(24.0);
 const DisplacementUnit kStageOneHeight = inches(25.0);
 const DisplacementUnit kStageOneStandoffLength = inches(2);
@@ -52,4 +60,4 @@ const DisplacementUnit kCarriageHeight = inches(6.0);
 const DisplacementUnit kTotalTravel =
     kStageTwoTravel + kStageThreeTravel + kCarriageTravel;
 
-void DrawElevatorStages(DisplacementUnit position);
+void DrawRobot(DisplacementUnit position);

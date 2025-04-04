@@ -55,13 +55,21 @@ void DrawVerticalTubes(Vector3 origin, DisplacementUnit length,
                 BLACK);
 }
 
-void DrawHorizontalTubeUp(Vector3 origin, DisplacementUnit length) {
-  origin.y -= kTubeWidth.in(vu);
-  origin.z -= kTubeHeight.in(vu);
+void DrawHorizontalTubeUpZ(Vector3 origin, DisplacementUnit length) {
+  origin.y += (kTubeHeight / 2).in(vu);
   origin.z += (kTubeWidth / 2).in(vu);
   DrawCube(origin, length.in(vu), kTubeHeight.in(vu), kTubeWidth.in(vu),
            k5112Green);
   DrawCubeWires(origin, length.in(vu), kTubeHeight.in(vu), kTubeWidth.in(vu),
+                BLACK);
+}
+
+void DrawHorizontalTubeUpX(Vector3 origin, DisplacementUnit length) {
+  origin.y += (kTubeHeight / 2).in(vu);
+  origin.x += (kTubeWidth / 2).in(vu);
+  DrawCube(origin, kTubeWidth.in(vu), kTubeHeight.in(vu), length.in(vu),
+           k5112Green);
+  DrawCubeWires(origin, kTubeWidth.in(vu), kTubeHeight.in(vu), length.in(vu),
                 BLACK);
 }
 
@@ -113,8 +121,10 @@ void DrawStageOne(Vector3 origin) {
   origin.y += kStageOneHeight.in(vu);
   DrawStandoffs(origin, kStageOneStandoffLength, kStageOneStandoffRadius,
                 kStageOneInnerWidth + kTubeWidth);
+  origin.y -= kTubeHeight.in(vu);
   origin.z -= kTubeHeight.in(vu);
-  DrawHorizontalTubeUp(origin, kStageOneInnerWidth + 2 * kTubeWidth);
+  origin.z -= kStageOneStandoffLength.in(vu);
+  DrawHorizontalTubeUpZ(origin, kStageOneInnerWidth + 2 * kTubeWidth);
 }
 
 void DrawStageTwo(Vector3 origin) {
@@ -140,27 +150,62 @@ void DrawCarriage(Vector3 origin) {
   DrawHorizontalTubeFlat(origin, kCarriageInnerWidth);
 }
 
-void DrawElevatorStages(DisplacementUnit position) {
-  double percent = position / kTotalTravel;
+void DrawBase(Vector3 origin) {
+  DrawCube(origin, kBaseSize.in(vu), kBaseThickness.in(vu), kBaseSize.in(vu),
+           GRAY);
+  DrawCubeWires(origin, kBaseSize.in(vu), kBaseThickness.in(vu),
+                kBaseSize.in(vu), BLACK);
+}
 
+void DrawFrameTubes(Vector3 origin) {
+  Vector3 frame_origin;
+  frame_origin = origin;
+  frame_origin.z += kFrameTubeDistance.in(vu);
+  DrawHorizontalTubeUpZ(frame_origin, kFrameTubeLength);
+  frame_origin = origin;
+  frame_origin.z -= kFrameTubeDistance.in(vu);
+  frame_origin.z -= kTubeWidth.in(vu);
+  DrawHorizontalTubeUpZ(frame_origin, kFrameTubeLength);
+  frame_origin = origin;
+  frame_origin.x += kFrameTubeDistance.in(vu);
+  DrawHorizontalTubeUpX(frame_origin, kFrameTubeLength - 2 * kTubeWidth);
+  frame_origin = origin;
+  frame_origin.x -= kFrameTubeDistance.in(vu);
+  frame_origin.x -= kTubeWidth.in(vu);
+  DrawHorizontalTubeUpX(frame_origin, kFrameTubeLength - 2 * kTubeWidth);
+}
+
+void DrawRobot(DisplacementUnit elevator_position) {
   Vector3 origin = {0, 0, 0};
 
-  Vector3 stage_one_origin = origin;
-  stage_one_origin.y += kStageOneToFloor.in(vu);
+  Vector3 base_origin = origin;
+  base_origin.y += kBaseToFloor.in(vu);
+  DrawBase(base_origin);
+
+  Vector3 frame_origin = base_origin;
+  frame_origin.y += kFrameToBase.in(vu);
+  DrawFrameTubes(frame_origin);
+
+  Vector3 stage_one_origin = frame_origin;
+  stage_one_origin.y += kStageOneToFrame.in(vu);
   DrawStageOne(stage_one_origin);
+
+  double elevator_percent = elevator_position / kTotalTravel;
 
   Vector3 stage_two_origin = stage_one_origin;
   stage_two_origin.y +=
-      (kStageTwoToStageOneAtBottom + percent * kStageTwoTravel).in(vu);
+      (kStageTwoToStageOneAtBottom + elevator_percent * kStageTwoTravel).in(vu);
   DrawStageTwo(stage_two_origin);
 
   Vector3 stage_three_origin = stage_two_origin;
   stage_three_origin.y +=
-      (kStageThreeToStageTwoAtBottom + percent * kStageThreeTravel).in(vu);
+      (kStageThreeToStageTwoAtBottom + elevator_percent * kStageThreeTravel)
+          .in(vu);
   DrawStageThree(stage_three_origin);
 
   Vector3 carriage_origin = stage_three_origin;
   carriage_origin.y +=
-      (kCarriageToStageThreeAtBottom + percent * kCarriageTravel).in(vu);
+      (kCarriageToStageThreeAtBottom + elevator_percent * kCarriageTravel)
+          .in(vu);
   DrawCarriage(carriage_origin);
 }
