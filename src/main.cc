@@ -22,8 +22,7 @@ int main() {
   TimeUnit sim_time_step = (micro(seconds))(50);
   AccelerationUnit gravity = (meters / squared(second))(-9.81);
 
-  ElevatorSim sim{elevator, sim_time_step};
-  sim.SetGravity(gravity);
+  ElevatorSim sim{elevator, gravity, sim_time_step};
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
   InitWindow(kWindowWidth.in(pixels), kWindowHeight.in(pixels),

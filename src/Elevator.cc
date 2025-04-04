@@ -1,6 +1,7 @@
 #include "Elevator.hh"
 #include "Eigen.hh"
 #include "units.hh"
+#include <ctime>
 
 AngularVelocityUnit Elevator::MotorVelocity(VelocityUnit velocity) const {
   return velocity * radians(1) * gear_ratio / drum_radius;
@@ -62,25 +63,30 @@ VoltageUnit Elevator::LimitVoltage(VelocityUnit velocity,
   return voltage;
 }
 
-ElevatorSim::ElevatorSim(const Elevator &elevator, TimeUnit time_step)
+ElevatorSim::ElevatorSim(const Elevator &elevator, AccelerationUnit gravity,
+                         TimeUnit time_step)
     : time_step_(time_step), state_(meters(0), (meters / second)(0)),
-      input_(volts(0), (meters / squared(second))(0)), elevator_(elevator) {
+      input_(volts(0)), elevator_(elevator) {
   continuous_system_ << 0, 1, 0,
       elevator.VelocityCoefficient().in((meters / squared(second)) /
                                         (meters / second));
-  continuous_input_ << 0, 0,
-      elevator.VoltageCoefficient().in((meters / squared(second)) / volt), 1;
+  continuous_input_ << 0,
+      elevator.VoltageCoefficient().in((meters / squared(second)) / volt);
 
   auto continuous_matrices =
       std::make_pair(continuous_system_, continuous_input_);
   auto discretized = Discretize(continuous_matrices, time_step_);
   discrete_system_ = discretized.first;
   discrete_input_ = discretized.second;
+
+  discrete_gravity_ << (gravity * 0.5 * time_step * time_step).in(meters),
+      (gravity * time_step).in(meters / second);
 }
 
 void ElevatorSim::Update(VoltageUnit voltage) {
   input_.SetVoltage(voltage);
-  state_ = discrete_system_ * state_.state + discrete_input_ * input_.input;
+  state_ = discrete_system_ * state_.state + discrete_input_ * input_.input +
+           discrete_gravity_;
   // TODO Attempt to find a cleaner clamping method
   if (state_.Position() > elevator_.max_travel) {
     state_.SetPosition(elevator_.max_travel);

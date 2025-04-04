@@ -37,50 +37,10 @@ struct Elevator {
   VoltageUnit LimitVoltage(VelocityUnit velocity, VoltageUnit voltage) const;
 };
 
-struct ElevatorState {
-  Eigen::Vector<double, 2> state;
-
-  ElevatorState(DisplacementUnit position, VelocityUnit velocity) {
-    SetPosition(position);
-    SetVelocity(velocity);
-  }
-  ElevatorState &operator=(const Eigen::Vector<double, 2> &state) {
-    this->state[0] = state[0];
-    this->state[1] = state[1];
-    return *this;
-  }
-
-  DisplacementUnit Position() const { return meters(state[0]); }
-  VelocityUnit Velocity() const { return (meters / second)(state[1]); }
-  void SetPosition(DisplacementUnit position) {
-    state[0] = position.in(meters);
-  }
-  void SetVelocity(VelocityUnit velocity) {
-    state[1] = velocity.in(meters / second);
-  }
-};
-
-struct ElevatorInput {
-  Eigen::Vector<double, 2> input;
-
-  ElevatorInput(VoltageUnit voltage, AccelerationUnit acceleration) {
-    SetVoltage(voltage);
-    SetAcceleration(acceleration);
-  }
-
-  VoltageUnit Voltage() const { return volts(input[0]); }
-  AccelerationUnit Acceleration() {
-    return (meters / squared(second))(input[1]);
-  }
-  void SetVoltage(VoltageUnit voltage) { input[0] = voltage.in(volts); }
-  void SetAcceleration(AccelerationUnit acceleration) {
-    input[1] = acceleration.in(meters / squared(second));
-  }
-};
-
 class ElevatorSim {
 public:
-  ElevatorSim(const Elevator &elevator, TimeUnit time_step);
+  ElevatorSim(const Elevator &elevator, AccelerationUnit gravity,
+              TimeUnit time_step);
 
   DisplacementUnit Position() const { return state_.Position(); }
 
@@ -88,19 +48,50 @@ public:
 
   VoltageUnit Voltage() const { return input_.Voltage(); }
 
-  void SetGravity(AccelerationUnit gravity) { input_.SetAcceleration(gravity); }
-
   void Update(VoltageUnit voltage);
 
   // TODO
   const static int kNumStates = 2;
-  const static int kNumInputs = 2;
+  const static int kNumInputs = 1;
 
 private:
+  struct ElevatorState {
+    Eigen::Vector<double, kNumStates> state;
+
+    ElevatorState(DisplacementUnit position, VelocityUnit velocity) {
+      SetPosition(position);
+      SetVelocity(velocity);
+    }
+    ElevatorState &operator=(const Eigen::Vector<double, kNumStates> &state) {
+      this->state[0] = state[0];
+      this->state[1] = state[1];
+      return *this;
+    }
+
+    DisplacementUnit Position() const { return meters(state[0]); }
+    VelocityUnit Velocity() const { return (meters / second)(state[1]); }
+    void SetPosition(DisplacementUnit position) {
+      state[0] = position.in(meters);
+    }
+    void SetVelocity(VelocityUnit velocity) {
+      state[1] = velocity.in(meters / second);
+    }
+  };
+
+  struct ElevatorInput {
+    Eigen::Vector<double, kNumInputs> input;
+
+    ElevatorInput(VoltageUnit voltage) { SetVoltage(voltage); }
+
+    VoltageUnit Voltage() const { return volts(input[0]); }
+    void SetVoltage(VoltageUnit voltage) { input[0] = voltage.in(volts); }
+  };
+
   SystemMatrix<kNumStates> continuous_system_;
   InputMatrix<kNumStates, kNumInputs> continuous_input_;
   SystemMatrix<kNumStates> discrete_system_;
   InputMatrix<kNumStates, kNumInputs> discrete_input_;
+  Eigen::Vector<double, kNumStates> discrete_gravity_;
   TimeUnit time_step_;
   ElevatorState state_;
   ElevatorInput input_;
