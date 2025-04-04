@@ -21,9 +21,7 @@ int main() {
                     amperes(120),  kTotalTravel,        krakenX60 * 2};
 
   TimeUnit sim_time_step = (milli(seconds))(1);
-  AccelerationUnit gravity = (meters / squared(second))(-9.81);
-
-  ElevatorSim sim{elevator, gravity, sim_time_step};
+  ElevatorSim sim{elevator, (meters / squared(second))(-9.81), sim_time_step};
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
   InitWindow(kWindowWidth.in(pixels), kWindowHeight.in(pixels),
@@ -105,9 +103,8 @@ int main() {
 
       DisplacementUnit error = setpoint - sim.Position();
       VoltageUnit voltage = error * kP;
-      voltage += elevator.OpposingVoltage(gravity);
-      voltage = au::clamp(voltage, volts(-12), volts(12));
-      voltage = elevator.LimitVoltage(sim.Velocity(), voltage);
+      voltage += sim.OpposingGravity();
+      voltage = sim.CurrentLimit(voltage);
       sim.Update(voltage);
       sim_time += sim_time_step;
     }

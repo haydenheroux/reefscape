@@ -79,8 +79,21 @@ ElevatorSim::ElevatorSim(const Elevator &elevator, AccelerationUnit gravity,
   discrete_system_ = discretized.first;
   discrete_input_ = discretized.second;
 
+  // Vector that, when added each time step, approximates applying gravity for
+  // the time step
+  // TODO Use a more sophisticated / more accurate method for including gravity
   discrete_gravity_ << (gravity * 0.5 * time_step * time_step).in(meters),
       (gravity * time_step).in(meters / second);
+}
+
+VoltageUnit ElevatorSim::OpposingGravity() const {
+  Eigen::Matrix<double, kNumInputs, kNumStates> discrete_input_transpose =
+      discrete_input_.transpose();
+  Eigen::Vector<double, kNumInputs> solution =
+      -1 * (discrete_input_transpose * discrete_gravity_) /
+      (discrete_input_transpose * discrete_input_);
+  ElevatorInput input{solution};
+  return input.Voltage();
 }
 
 void ElevatorSim::Update(VoltageUnit voltage) {

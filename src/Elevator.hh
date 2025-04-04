@@ -2,6 +2,7 @@
 
 #include "Eigen.hh"
 #include "Motor.hh"
+#include "au/math.hh"
 #include "units.hh"
 
 struct Elevator {
@@ -43,10 +44,20 @@ public:
               TimeUnit time_step);
 
   DisplacementUnit Position() const { return state_.Position(); }
+  void SetPosition(DisplacementUnit position) { state_.SetPosition(position); }
 
   VelocityUnit Velocity() const { return state_.Velocity(); }
 
   VoltageUnit Voltage() const { return input_.Voltage(); }
+
+  VoltageUnit OpposingGravity() const;
+  VoltageUnit Saturate(VoltageUnit voltage) const {
+    return au::clamp(voltage, -elevator_.motor.nominal_voltage_,
+                     elevator_.motor.nominal_voltage_);
+  }
+  VoltageUnit CurrentLimit(VoltageUnit voltage) const {
+    return elevator_.LimitVoltage(Velocity(), Saturate(voltage));
+  }
 
   void Update(VoltageUnit voltage);
 
@@ -82,6 +93,13 @@ private:
     Eigen::Vector<double, kNumInputs> input;
 
     ElevatorInput(VoltageUnit voltage) { SetVoltage(voltage); }
+    ElevatorInput(const Eigen::Vector<double, kNumInputs> &input) {
+      this->input[0] = input[0];
+    }
+    ElevatorInput &operator=(const Eigen::Vector<double, kNumInputs> &input) {
+      this->input[0] = input[0];
+      return *this;
+    }
 
     VoltageUnit Voltage() const { return volts(input[0]); }
     void SetVoltage(VoltageUnit voltage) { input[0] = voltage.in(volts); }
