@@ -5,6 +5,7 @@
 #include "au/units/pounds_mass.hh"
 #include "au/units/volts.hh"
 #include "raylib.h"
+#include "raymath.h"
 #define RLIGHTS_IMPLEMENTATION
 #include "raylights.h"
 #include "render.hh"
@@ -19,7 +20,7 @@ int main() {
   Elevator elevator{gear_ratio(5), 0.5 * inches(1.273), pounds_mass(30),
                     amperes(120),  kTotalTravel,        krakenX60 * 2};
 
-  TimeUnit sim_time_step = (micro(seconds))(50);
+  TimeUnit sim_time_step = (milli(seconds))(1);
   AccelerationUnit gravity = (meters / squared(second))(-9.81);
 
   ElevatorSim sim{elevator, gravity, sim_time_step};
@@ -27,36 +28,45 @@ int main() {
   SetConfigFlags(FLAG_MSAA_4X_HINT);
   InitWindow(kWindowWidth.in(pixels), kWindowHeight.in(pixels),
              "reefscape elevator simulator");
+  SetTargetFPS(60);
 
   TimeUnit render_time = seconds(0);
   TimeUnit sim_time = seconds(0);
-  TimeUnit max_render_time = (milli(seconds))(1);
+  TimeUnit max_render_time = (milli(seconds))(50);
 
   auto kP = (volts / meter)(96.0);
 
-  DisplacementUnit camera_height = kStageOneToFloor + kTotalTravel * 0.5;
+  AngularVelocityUnit camera_omega = (degrees / second)(12);
+
+  Vector3 camera_position;
+  camera_position.x = meters(3).in(vu);
+  camera_position.y = inches(70.0).in(vu);
+  camera_position.z = meters(0).in(vu);
+
+  Vector3 camera_target;
+  camera_target.x = meters(0).in(vu);
+  camera_target.y = inches(36.0).in(vu);
+  camera_target.z = meters(0).in(vu);
+
+  Vector3 up{0, 1, 0};
 
   Camera camera;
-  camera.position.x = meters(3).in(vu);
-  camera.position.y = camera_height.in(vu);
-  camera.position.z = meters(2).in(vu);
-  camera.target.x = meters(0).in(vu);
-  camera.target.y = camera_height.in(vu);
-  camera.target.z = meters(0).in(vu);
-  camera.up = (Vector3){0.0f, 1.0f, 0.0f};
-  camera.fovy = 45.0f;
+  camera.position = camera_position;
+  camera.target = camera_target;
+  camera.up = up;
+  camera.fovy = 45;
   camera.projection = CAMERA_PERSPECTIVE;
 
   Shader shader = LoadShader("shaders/lighting.vs", "shaders/lighting.fs");
   shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
 
-  int ambientLoc = GetShaderLocation(shader, "ambient");
-  SetShaderValue(shader, ambientLoc, (float[4]){0.1f, 0.1f, 0.1f, 1.0f},
+  int ambient = GetShaderLocation(shader, "ambient");
+  SetShaderValue(shader, ambient, (float[4]){0.1f, 0.1f, 0.1f, 1.0f},
                  SHADER_UNIFORM_VEC4);
 
   Vector3 origin{0, 0, 0};
   DisplacementUnit light_distance = inches(48);
-  DisplacementUnit light_height = camera_height + inches(6);
+  DisplacementUnit light_height = meters(1);
 
   Vector3 yellow{-light_distance.in<float>(vu), light_height.in<float>(vu),
                  -light_distance.in<float>(vu)};
@@ -68,10 +78,12 @@ int main() {
                -light_distance.in<float>(vu)};
 
   Light lights[MAX_LIGHTS] = {0};
-  lights[0] = CreateLight(LIGHT_DIRECTIONAL, yellow, origin, YELLOW, shader);
-  lights[1] = CreateLight(LIGHT_DIRECTIONAL, red, origin, RED, shader);
-  lights[2] = CreateLight(LIGHT_DIRECTIONAL, green, origin, GREEN, shader);
-  lights[3] = CreateLight(LIGHT_DIRECTIONAL, blue, origin, BLUE, shader);
+  lights[0] =
+      CreateLight(LIGHT_DIRECTIONAL, yellow, origin, k5112Green, shader);
+  lights[1] = CreateLight(LIGHT_DIRECTIONAL, red, origin, k5112Green, shader);
+  lights[2] = CreateLight(LIGHT_DIRECTIONAL, green, origin, k5112Green, shader);
+  lights[3] =
+      CreateLight(LIGHT_DIRECTIONAL, blue, origin, k5112GreenShadow, shader);
 
   while (!WindowShouldClose()) {
     TimeUnit elapsed_time = seconds(GetFrameTime());
@@ -108,6 +120,9 @@ int main() {
     std::string elapsed_time_text =
         std::to_string(elapsed_time.in(milli(seconds))) + " ms";
 
+    camera.position = Vector3RotateByAxisAngle(
+        camera.position, up, (camera_omega * elapsed_time).in(radians));
+
     float cameraPos[3] = {camera.position.x, camera.position.y,
                           camera.position.z};
     SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos,
@@ -116,23 +131,17 @@ int main() {
       UpdateLightValues(shader, lights[i]);
 
     BeginDrawing();
-    ClearBackground(BLACK);
+    ClearBackground(WHITE);
     BeginMode3D(camera);
     BeginShaderMode(shader);
     DrawElevatorStages(position);
     EndShaderMode();
-    for (int i = 0; i < MAX_LIGHTS; i++) {
-      if (lights[i].enabled)
-        DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);
-      else
-        DrawSphereWires(lights[i].position, 0.2f, 8, 8,
-                        ColorAlpha(lights[i].color, 0.3f));
-    }
+    DrawPlane(origin, Vector2{1000, 1000}, LIGHTGRAY);
     EndMode3D();
-    DrawText(position_text.c_str(), 0, 0, 20, WHITE);
-    DrawText(velocity_text.c_str(), 0, 20, 20, WHITE);
-    DrawText(voltage_text.c_str(), 0, 40, 20, WHITE);
-    DrawText(elapsed_time_text.c_str(), 0, 60, 20, WHITE);
+    DrawText(position_text.c_str(), 0, 0, 20, GRAY);
+    DrawText(velocity_text.c_str(), 0, 20, 20, GRAY);
+    DrawText(voltage_text.c_str(), 0, 40, 20, GRAY);
+    DrawText(elapsed_time_text.c_str(), 0, 60, 20, GRAY);
     EndDrawing();
   }
 

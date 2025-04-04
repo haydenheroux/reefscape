@@ -98,7 +98,7 @@ void DrawThinTubesBack(Vector3 origin, DisplacementUnit thin_tube_length,
 
 void DrawThinTubeAcross(Vector3 origin, DisplacementUnit length) {
   origin.y += (kThinTubeWidth / 2).in(vu);
-  origin.z += (kTubeHeight / 2).in(vu);
+  origin.z += (kThinTubeHeight / 2).in(vu);
 
   DrawCube(origin, length.in(vu), kThinTubeWidth.in(vu), kThinTubeHeight.in(vu),
            k5112Green);
@@ -144,9 +144,6 @@ void DrawElevatorStages(DisplacementUnit position) {
   double percent = position / kTotalTravel;
 
   Vector3 origin = {0, 0, 0};
-
-  Vector3 test_origin = origin;
-  test_origin.y = kTubeWidth.in(vu);
 
   Vector3 stage_one_origin = origin;
   stage_one_origin.y += kStageOneToFloor.in(vu);
