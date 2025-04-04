@@ -1,12 +1,12 @@
-add_executable(main main.cc Elevator.cc render.cc)
+add_library(sim Elevator.cc Elevator.hh render.cc render.hh units.hh common.hh)
+target_include_directories(sim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(
-    main
+    sim
     PRIVATE
     au
     Eigen3::Eigen
     raylib
-    ntcore
 )
 
-target_compile_features(main PRIVATE cxx_std_23)
+target_compile_features(sim PRIVATE cxx_std_23)

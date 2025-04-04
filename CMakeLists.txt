@@ -15,4 +15,5 @@ include(cmake/PreventInsource.cmake)
 include(Dependencies.cmake)
 setup_dependencies()
 
+add_subdirectory(apps)
 add_subdirectory(src)

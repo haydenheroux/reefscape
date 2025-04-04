@@ -55,9 +55,9 @@ constexpr auto pixel = SingularNameFor<Pixels>{};
 constexpr auto pixels = QuantityMaker<Pixels>{};
 constexpr auto pixels_pt = QuantityPointMaker<Pixels>{};
 
-struct ViewportUnits : decltype(Meters{} / mag<4>()) {
+struct RaylibUnits : decltype(Meters{} / mag<4>()) {
   static constexpr const char label[] = "vu";
 };
-constexpr auto vu = SingularNameFor<ViewportUnits>{};
-constexpr auto viewport_units = QuantityMaker<ViewportUnits>{};
-constexpr auto viewport_unit_pt = QuantityPointMaker<ViewportUnits>{};
+constexpr auto raylib_unit = SingularNameFor<RaylibUnits>{};
+constexpr auto raylib_units = QuantityMaker<RaylibUnits>{};
+constexpr auto raylib_unit_pt = QuantityPointMaker<RaylibUnits>{};
