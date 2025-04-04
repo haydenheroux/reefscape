@@ -4,6 +4,9 @@
 #include "au/units/minutes.hh"
 #include "au/units/pounds_mass.hh"
 #include "au/units/volts.hh"
+#include "ntcore_c.h"
+#include "ntcore_cpp.h"
+#include "ntcore_cpp_types.h"
 #include "raylib.h"
 #include "raymath.h"
 #define RLIGHTS_IMPLEMENTATION
@@ -19,6 +22,10 @@ int main() {
 
   Elevator elevator{gear_ratio(5), 0.5 * inches(1.273), pounds_mass(30),
                     amperes(120),  kTotalTravel,        krakenX60 * 2};
+
+  NT_Publisher publisher = nt::Publish(
+      nt::GetTopic(nt::GetDefaultInstance(), "/position"), NT_DOUBLE, "double");
+  nt::StartServer(nt::GetDefaultInstance(), "", "127.0.0.1", 0, 5810);
 
   TimeUnit sim_time_step = (milli(seconds))(1);
   ElevatorSim sim{elevator, (meters / squared(second))(-9.81), sim_time_step};
@@ -110,6 +117,8 @@ int main() {
     }
 
     DisplacementUnit position = sim.Position();
+    nt::SetDouble(publisher, position.in(meters));
+
     std::string position_text = std::to_string(position.in(meters)) + " m";
     std::string velocity_text =
         std::to_string(sim.Velocity().in(meters / second)) + " m/s";

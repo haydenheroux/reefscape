@@ -6,6 +6,7 @@ target_link_libraries(
     au
     Eigen3::Eigen
     raylib
+    ntcore
 )
 
 target_compile_features(main PRIVATE cxx_std_23)
