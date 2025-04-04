@@ -49,6 +49,7 @@ int main() {
     voltage = sim.CurrentLimit(voltage);
     sim.Update(voltage);
     nt::SetDouble(publisher, sim.Position().in(meters));
+    nt::Flush(server);
 
     sim_time += sim_time_step;
     std::this_thread::sleep_for(
