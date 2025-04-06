@@ -2,6 +2,8 @@
 
 #include "units.hh"
 
+namespace sim {
+using namespace units;
 struct Motor {
   VoltageUnit nominal_voltage_;
   TorqueUnit stall_torque_;
@@ -29,3 +31,4 @@ struct Motor {
                  free_current_ * num_motors);
   }
 };
+} // namespace sim

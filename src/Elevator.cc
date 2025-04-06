@@ -1,8 +1,11 @@
 #include "Elevator.hh"
 #include "Eigen.hh"
+#include "au/power_aliases.hh"
 #include "units.hh"
 #include <ctime>
 
+namespace sim {
+using namespace units;
 AngularVelocityUnit Elevator::MotorVelocity(VelocityUnit velocity) const {
   return velocity * radians(1) * gear_ratio / drum_radius;
 }
@@ -73,27 +76,21 @@ ElevatorSim::ElevatorSim(const Elevator &elevator, AccelerationUnit gravity,
   continuous_input_ << 0,
       elevator.VoltageCoefficient().in((meters / squared(second)) / volt);
 
+  continuous_input_pseudoinverse_ = PseudoInverse(continuous_input_);
+
   auto continuous_matrices =
       std::make_pair(continuous_system_, continuous_input_);
-  auto discretized = Discretize(continuous_matrices, time_step_);
-  discrete_system_ = discretized.first;
-  discrete_input_ = discretized.second;
+  auto discretized_matrices = Discretize(continuous_matrices, time_step_);
+  discrete_system_ = discretized_matrices.first;
+  discrete_input_ = discretized_matrices.second;
 
-  // Vector that, when added each time step, approximates applying gravity for
-  // the time step
-  // TODO Use a more sophisticated / more accurate method for including gravity
-  discrete_gravity_ << (gravity * 0.5 * time_step * time_step).in(meters),
-      (gravity * time_step).in(meters / second);
+  continuous_gravity_ << 0, gravity.in(meters / squared(second));
+  discrete_gravity_ << discrete_input_ * continuous_input_pseudoinverse_ * continuous_gravity_;
 }
 
 VoltageUnit ElevatorSim::OpposingGravity() const {
-  Eigen::Matrix<double, kNumInputs, kNumStates> discrete_input_transpose =
-      discrete_input_.transpose();
-  Eigen::Vector<double, kNumInputs> solution =
-      -1 * (discrete_input_transpose * discrete_gravity_) /
-      (discrete_input_transpose * discrete_input_);
-  ElevatorInput input{solution};
-  return input.Voltage();
+  ElevatorInput input{continuous_input_pseudoinverse_ * continuous_gravity_};
+  return -input.Voltage();
 }
 
 void ElevatorSim::Update(VoltageUnit voltage) {
@@ -107,3 +104,4 @@ void ElevatorSim::Update(VoltageUnit voltage) {
     state_.SetPosition(meters(0));
   }
 }
+}; // namespace sim

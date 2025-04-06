@@ -4,6 +4,9 @@
 #include "units.hh"
 #include <cassert>
 
+namespace render {
+using namespace robot;
+
 void DrawStandoff(Vector3 start, DisplacementUnit length,
                   DisplacementUnit radius) {
   Vector3 end = start;
@@ -218,3 +221,4 @@ void DrawRobot(DisplacementUnit elevator_position) {
           .in(raylib_units);
   DrawCarriage(carriage_origin);
 }
+}; // namespace render

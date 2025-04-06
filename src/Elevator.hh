@@ -5,6 +5,8 @@
 #include "au/math.hh"
 #include "units.hh"
 
+namespace sim {
+using namespace units;
 struct Elevator {
   RatioUnit gear_ratio;
   DisplacementUnit drum_radius;
@@ -107,11 +109,14 @@ private:
 
   SystemMatrix<kNumStates> continuous_system_;
   InputMatrix<kNumStates, kNumInputs> continuous_input_;
+  InputMatrix<kNumInputs, kNumStates> continuous_input_pseudoinverse_;
   SystemMatrix<kNumStates> discrete_system_;
   InputMatrix<kNumStates, kNumInputs> discrete_input_;
+  Eigen::Vector<double, kNumStates> continuous_gravity_;
   Eigen::Vector<double, kNumStates> discrete_gravity_;
   TimeUnit time_step_;
   ElevatorState state_;
   ElevatorInput input_;
   Elevator elevator_;
 };
+} // namespace sim

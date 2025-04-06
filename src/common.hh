@@ -4,6 +4,8 @@
 #include "au/units/inches.hh"
 #include "units.hh"
 
+namespace robot {
+using namespace units;
 const DisplacementUnit kTubeWidth = inches(1);
 const DisplacementUnit kTubeHeight = inches(2);
 const DisplacementUnit kThinTubeWidth = inches(1);
@@ -52,4 +54,4 @@ const DisplacementUnit kCarriageHeight = inches(6.0);
 
 const DisplacementUnit kTotalTravel =
     kStageTwoTravel + kStageThreeTravel + kCarriageTravel;
-
+} // namespace sim

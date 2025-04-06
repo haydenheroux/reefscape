@@ -8,6 +8,8 @@
 #include "units.hh"
 #include <cmath>
 
+using namespace units;
+
 int main() {
   auto client = nt::CreateInstance();
   nt::StartClient4(client, "client");
@@ -53,7 +55,7 @@ int main() {
     BeginDrawing();
     ClearBackground(WHITE);
     BeginMode3D(camera);
-    DrawRobot(position);
+    render::DrawRobot(position);
     DrawPlane(Vector3{0, 0, 0}, Vector2{1000, 1000}, LIGHTGRAY);
     EndMode3D();
     EndDrawing();

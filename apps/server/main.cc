@@ -11,12 +11,15 @@
 #include <cmath>
 #include <thread>
 
-int main() {
-  Motor krakenX60{volts(12), newton_meters(7.09), amperes(366),
-                  (revolutions / minute)(6000), amperes(2)};
+using namespace units;
+using namespace robot;
 
-  Elevator elevator{gear_ratio(5), 0.5 * inches(1.273), pounds_mass(30),
-                    amperes(120),  kTotalTravel,        krakenX60 * 2};
+int main() {
+  sim::Motor krakenX60{volts(12), newton_meters(7.09), amperes(366),
+                       (revolutions / minute)(6000), amperes(2)};
+
+  sim::Elevator elevator{gear_ratio(5), 0.5 * inches(1.273), pounds_mass(30),
+                         amperes(120),  kTotalTravel,        krakenX60 * 2};
 
   auto server = nt::CreateInstance();
 
@@ -24,8 +27,9 @@ int main() {
       nt::Publish(nt::GetTopic(server, "/position"), NT_DOUBLE, "double");
   nt::StartServer(server, "", "127.0.0.1", 0, 5810);
 
-  TimeUnit sim_time_step = (milli(seconds))(1);
-  ElevatorSim sim{elevator, (meters / squared(second))(-9.81), sim_time_step};
+  TimeUnit sim_time_step = (milli(seconds))(2.5);
+  sim::ElevatorSim sim{elevator, (meters / squared(second))(-9.81),
+                       sim_time_step};
 
   TimeUnit sim_time = seconds(0);
 
