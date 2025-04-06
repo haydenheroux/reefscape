@@ -89,13 +89,13 @@ ElevatorSim::ElevatorSim(const Elevator &elevator, AccelerationUnit gravity,
 }
 
 VoltageUnit ElevatorSim::OpposingGravity() const {
-  ElevatorInput input{continuous_input_pseudoinverse_ * continuous_gravity_};
+  Input input{continuous_input_pseudoinverse_ * continuous_gravity_};
   return -input.Voltage();
 }
 
 void ElevatorSim::Update(VoltageUnit voltage) {
   input_.SetVoltage(voltage);
-  state_ = discrete_system_ * state_.state + discrete_input_ * input_.input +
+  state_ = discrete_system_ * state_.vector + discrete_input_ * input_.vector +
            discrete_gravity_;
   // TODO Attempt to find a cleaner clamping method
   if (state_.Position() > elevator_.max_travel) {

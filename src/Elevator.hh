@@ -63,60 +63,60 @@ public:
 
   void Update(VoltageUnit voltage);
 
-  // TODO
-  const static int kNumStates = 2;
-  const static int kNumInputs = 1;
-
 private:
-  struct ElevatorState {
-    Eigen::Vector<double, kNumStates> state;
+  struct State {
+    static const int Dimension = 2;
+    Eigen::Vector<double, Dimension> vector;
 
-    ElevatorState(DisplacementUnit position, VelocityUnit velocity) {
+    State(DisplacementUnit position, VelocityUnit velocity) {
       SetPosition(position);
       SetVelocity(velocity);
     }
-    ElevatorState &operator=(const Eigen::Vector<double, kNumStates> &state) {
-      this->state[0] = state[0];
-      this->state[1] = state[1];
+    State &operator=(const StateVector<Dimension> &state) {
+      this->vector[0] = state[0];
+      this->vector[1] = state[1];
       return *this;
     }
 
-    DisplacementUnit Position() const { return meters(state[0]); }
-    VelocityUnit Velocity() const { return (meters / second)(state[1]); }
+    DisplacementUnit Position() const { return meters(vector[0]); }
+    VelocityUnit Velocity() const { return (meters / second)(vector[1]); }
     void SetPosition(DisplacementUnit position) {
-      state[0] = position.in(meters);
+      vector[0] = position.in(meters);
     }
     void SetVelocity(VelocityUnit velocity) {
-      state[1] = velocity.in(meters / second);
+      vector[1] = velocity.in(meters / second);
     }
   };
 
-  struct ElevatorInput {
-    Eigen::Vector<double, kNumInputs> input;
+  struct Input {
+    static const int Dimension = 1;
+    InputVector<Dimension> vector;
 
-    ElevatorInput(VoltageUnit voltage) { SetVoltage(voltage); }
-    ElevatorInput(const Eigen::Vector<double, kNumInputs> &input) {
-      this->input[0] = input[0];
-    }
-    ElevatorInput &operator=(const Eigen::Vector<double, kNumInputs> &input) {
-      this->input[0] = input[0];
+    Input(VoltageUnit voltage) { SetVoltage(voltage); }
+    Input(const InputVector<Dimension> &input) { this->vector[0] = input[0]; }
+    Input &operator=(const InputVector<Dimension> &input) {
+      this->vector[0] = input[0];
       return *this;
     }
 
-    VoltageUnit Voltage() const { return volts(input[0]); }
-    void SetVoltage(VoltageUnit voltage) { input[0] = voltage.in(volts); }
+    VoltageUnit Voltage() const { return volts(vector[0]); }
+    void SetVoltage(VoltageUnit voltage) { vector[0] = voltage.in(volts); }
   };
 
-  SystemMatrix<kNumStates> continuous_system_;
-  InputMatrix<kNumStates, kNumInputs> continuous_input_;
-  InputMatrix<kNumInputs, kNumStates> continuous_input_pseudoinverse_;
-  SystemMatrix<kNumStates> discrete_system_;
-  InputMatrix<kNumStates, kNumInputs> discrete_input_;
-  Eigen::Vector<double, kNumStates> continuous_gravity_;
-  Eigen::Vector<double, kNumStates> discrete_gravity_;
+  // TODO(hayden): Reduce clutter by removing ::Dimension
+  SystemMatrix<State::Dimension> continuous_system_;
+  InputMatrix<State::Dimension, Input::Dimension> continuous_input_;
+  InputLeftPseudoInverseMatrix<State::Dimension, Input::Dimension>
+      continuous_input_pseudoinverse_;
+  SystemMatrix<State::Dimension> discrete_system_;
+  InputMatrix<State::Dimension, Input::Dimension> discrete_input_;
+  // TODO(hayden): Introduce a scheme / concept? for vectors with the same
+  // number of states but are not representable by an ElevatorState
+  Eigen::Vector<double, State::Dimension> continuous_gravity_;
+  Eigen::Vector<double, State::Dimension> discrete_gravity_;
   TimeUnit time_step_;
-  ElevatorState state_;
-  ElevatorInput input_;
+  State state_;
+  Input input_;
   Elevator elevator_;
 };
 } // namespace sim

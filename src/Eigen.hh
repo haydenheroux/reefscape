@@ -6,42 +6,49 @@
 #include <utility>
 
 namespace sim {
-using namespace units;
-template <int NumStates>
-using SystemMatrix = Eigen::Matrix<double, NumStates, NumStates>;
+template <int States> using StateVector = Eigen::Vector<double, States>;
 
-template <int NumStates, int NumInputs>
-using InputMatrix = Eigen::Matrix<double, NumStates, NumInputs>;
+template <int States>
+using SystemMatrix = Eigen::Matrix<double, States, States>;
 
-template <int NumStates, int NumInputs>
-std::pair<SystemMatrix<NumStates>, InputMatrix<NumStates, NumInputs>>
-Discretize(
-    const std::pair<SystemMatrix<NumStates>, InputMatrix<NumStates, NumInputs>>
-        &continuous_matrices,
-    TimeUnit sample_period) {
-  Eigen::Matrix<double, NumStates + NumInputs, NumStates + NumInputs> M;
-  M.template block<NumStates, NumStates>(0, 0) = continuous_matrices.first;
-  M.template block<NumStates, NumInputs>(0, NumStates) =
-      continuous_matrices.second;
-  M.template block<NumInputs, NumStates + NumInputs>(NumStates, 0).setZero();
+template <int Inputs> using InputVector = Eigen::Vector<double, Inputs>;
 
-  Eigen::Matrix<double, NumStates + NumInputs, NumStates + NumInputs> phi =
-      (M * sample_period.in(seconds)).exp();
+template <int States, int Inputs>
+using InputMatrix = Eigen::Matrix<double, States, Inputs>;
 
-  Eigen::Matrix<double, NumStates, NumStates> Ad =
-      phi.template block<NumStates, NumStates>(0, 0);
-  Eigen::Matrix<double, NumStates, NumInputs> Bd =
-      phi.template block<NumStates, NumInputs>(0, NumStates);
+// NOTE(hayden): The Moore-Penrose left pseudoinverse of an input matrix expects
+// a "tall" rather than a "wide" shape
+template <int States, int Inputs>
+  requires(States > Inputs)
+using InputLeftPseudoInverseMatrix = Eigen::Matrix<double, Inputs, States>;
+
+template <int States, int Inputs>
+std::pair<SystemMatrix<States>, InputMatrix<States, Inputs>> Discretize(
+    const std::pair<SystemMatrix<States>, InputMatrix<States, Inputs>> &AcBc,
+    units::TimeUnit sample_period) {
+  using BlockMatrix = Eigen::Matrix<double, States + Inputs, States + Inputs>;
+
+  // M = ⎡ Ac Bc ⎤
+  //     ⎣ 0  0  ⎦
+  BlockMatrix M;
+  M.template block<States, States>(0, 0) = AcBc.first;
+  M.template block<States, Inputs>(0, States) = AcBc.second;
+  M.template block<Inputs, States + Inputs>(States, 0).setZero();
+
+  // ϕ = ⎡ Ad Bd ⎤
+  //     ⎣ 0  I  ⎦
+  BlockMatrix phi = (M * sample_period.in(units::seconds)).exp();
+  SystemMatrix<States> Ad = phi.template block<States, States>(0, 0);
+  InputMatrix<States, Inputs> Bd =
+      phi.template block<States, Inputs>(0, States);
   return std::make_pair(Ad, Bd);
 }
 
-template <int NumStates, int NumInputs>
-Eigen::Matrix<double, NumInputs, NumStates>
-PseudoInverse(const InputMatrix<NumStates, NumInputs> &continuous_input) {
-  static_assert(NumStates > NumInputs,
-                "left pseudoinverse expects a tall matrix");
-  auto continuous_input_transpose = continuous_input.transpose();
-  return (continuous_input_transpose * continuous_input).inverse() *
-         continuous_input_transpose;
+template <int States, int Inputs>
+InputLeftPseudoInverseMatrix<States, Inputs>
+PseudoInverse(const InputMatrix<States, Inputs> &Bc) {
+  // Bc⁺ = (BcᵀBc)⁻¹Bcᵀ
+  auto BcT = Bc.transpose();
+  return (BcT * Bc).inverse() * BcT;
 }
 }; // namespace sim
