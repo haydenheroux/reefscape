@@ -68,8 +68,8 @@ VoltageUnit Elevator::LimitVoltage(VelocityUnit velocity,
 
 ElevatorSim::ElevatorSim(const Elevator &elevator, AccelerationUnit gravity,
                          TimeUnit time_step)
-    : time_step_(time_step), state_(meters(0), (meters / second)(0)),
-      input_(volts(0)), elevator_(elevator) {
+    : time_step_(time_step), state(meters(0), (meters / second)(0)),
+      input(volts(0)), elevator_(elevator) {
   continuous_system_ << 0, 1, 0,
       elevator.VelocityCoefficient().in((meters / squared(second)) /
                                         (meters / second));
@@ -85,23 +85,17 @@ ElevatorSim::ElevatorSim(const Elevator &elevator, AccelerationUnit gravity,
   discrete_input_ = discretized_matrices.second;
 
   continuous_gravity_ << 0, gravity.in(meters / squared(second));
-  discrete_gravity_ << discrete_input_ * continuous_input_pseudoinverse_ * continuous_gravity_;
+  discrete_gravity_ << discrete_input_ * continuous_input_pseudoinverse_ *
+                           continuous_gravity_;
 }
 
-VoltageUnit ElevatorSim::OpposingGravity() const {
-  Input input{continuous_input_pseudoinverse_ * continuous_gravity_};
-  return -input.Voltage();
+ElevatorSim::Input ElevatorSim::OpposingGravity() const {
+  return {-1 * continuous_input_pseudoinverse_ * continuous_gravity_};
 }
 
-void ElevatorSim::Update(VoltageUnit voltage) {
-  input_.SetVoltage(voltage);
-  state_ = discrete_system_ * state_.vector + discrete_input_ * input_.vector +
+void ElevatorSim::Update() {
+  state = discrete_system_ * state.vector + discrete_input_ * input.vector +
            discrete_gravity_;
-  // TODO Attempt to find a cleaner clamping method
-  if (state_.Position() > elevator_.max_travel) {
-    state_.SetPosition(elevator_.max_travel);
-  } else if (state_.Position() < meters(0)) {
-    state_.SetPosition(meters(0));
-  }
+  state = state.Clamped(meters(0), elevator_.max_travel);
 }
 }; // namespace sim

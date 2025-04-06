@@ -1,3 +1,4 @@
+#include "Eigen.hh"
 #include "Elevator.hh"
 #include "au/units/amperes.hh"
 #include "au/units/inches.hh"
@@ -33,26 +34,33 @@ int main() {
 
   TimeUnit sim_time = seconds(0);
 
+  // TODO(hayden): Implement LQR for feedback control
   auto kP = (volts / meter)(48.0);
+  auto kD = (volts / (meters / second))(0.0);
+
+  static const int kStates = sim::ElevatorSim::State::Dimension;
+  static const int kInputs = sim::ElevatorSim::Input::Dimension;
+  Eigen::Matrix<double, kInputs, kStates> K;
+  K << kP.in(volts / meter), kD.in(volts / (meters / second));
+
+  sim::ElevatorSim::State reference(meters(0), (meters / second)(0));
 
   while (true) {
-    DisplacementUnit setpoint;
-
     TimeUnit time = au::fmod(sim_time, seconds(6));
     if (time <= seconds(2)) {
-      setpoint = meters(0);
+      reference.SetPosition(meters(0));
     } else if (time >= seconds(4)) {
-      setpoint = meters(1.25);
+      reference.SetPosition(meters(1.25));
     } else {
-      setpoint = kTotalTravel;
+      reference.SetPosition(kTotalTravel);
     }
 
-    DisplacementUnit error = setpoint - sim.Position();
-    VoltageUnit voltage = error * kP;
-    voltage += sim.OpposingGravity();
-    voltage = sim.CurrentLimit(voltage);
-    sim.Update(voltage);
-    nt::SetDouble(publisher, sim.Position().in(meters));
+    sim::ElevatorSim::State error = reference - sim.state;
+    sim::ElevatorSim::Input input{K * error.vector};
+    input += sim.OpposingGravity();
+    sim.input = sim.CurrentLimited(input);
+    sim.Update();
+    nt::SetDouble(publisher, sim.state.Position().in(meters));
     nt::Flush(server);
 
     sim_time += sim_time_step;
