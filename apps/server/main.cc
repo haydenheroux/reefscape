@@ -5,7 +5,7 @@
 #include "au/units/minutes.hh"
 #include "au/units/pounds_mass.hh"
 #include "au/units/volts.hh"
-#include "common.hh"
+#include "robot.hh"
 #include "ntcore_cpp.h"
 #include "units.hh"
 #include <chrono>
@@ -35,8 +35,8 @@ int main() {
   TimeUnit sim_time = seconds(0);
 
   // TODO(hayden): Implement LQR for feedback control
-  auto kP = (volts / meter)(48.0);
-  auto kD = (volts / (meters / second))(0.0);
+  auto kP = (volts / meter)(191.2215);
+  auto kD = (volts / (meters / second))(4.811);
 
   static const int kStates = sim::ElevatorSim::State::Dimension;
   static const int kInputs = sim::ElevatorSim::Input::Dimension;

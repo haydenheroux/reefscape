@@ -1,4 +1,4 @@
-add_library(sim Elevator.cc Elevator.hh units.hh common.hh)
+add_library(sim Elevator.cc Elevator.hh units.hh)
 target_include_directories(sim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(

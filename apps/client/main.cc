@@ -19,7 +19,7 @@ int main() {
       nt::Subscribe(nt::GetTopic(client, "/position"), NT_DOUBLE, "double");
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
-  InitWindow(kWindowWidth.in(pixels), kWindowHeight.in(pixels),
+  InitWindow(render::kWindowWidth.in(pixels), render::kWindowHeight.in(pixels),
              "reefscape elevator simulator");
   SetTargetFPS(60);
 

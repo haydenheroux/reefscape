@@ -8,9 +8,6 @@ const Color k5112GreenShadow = {0, 148, 91, 255};
 
 namespace units {
 
-const DisplacementUnit kWindowWidth = meters(8);
-const DisplacementUnit kWindowHeight = meters(4.5);
-
 struct Pixels : decltype(Meters{} / mag<256>()) {
   static constexpr const char label[] = "px";
 };
@@ -28,5 +25,9 @@ constexpr auto raylib_unit_pt = QuantityPointMaker<RaylibUnits>{};
 
 namespace render {
 using namespace units;
+
+const DisplacementUnit kWindowWidth = pixels(360);
+const DisplacementUnit kWindowHeight = pixels(640);
+
 void DrawRobot(units::DisplacementUnit position);
 }; // namespace render

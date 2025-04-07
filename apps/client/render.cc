@@ -1,5 +1,5 @@
 #include "render.hh"
-#include "common.hh"
+#include "robot.hh"
 #include "raylib.h"
 #include "units.hh"
 #include <cassert>
