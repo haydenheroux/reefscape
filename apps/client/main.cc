@@ -3,8 +3,8 @@
 #include "ntcore_cpp.h"
 #include "ntcore_cpp_types.h"
 #include "raylib.h"
-#include "raymath.h"
 #include "render.hh"
+#include "render_units.hh"
 #include "units.hh"
 #include <cmath>
 
@@ -18,47 +18,22 @@ int main() {
   auto sub =
       nt::Subscribe(nt::GetTopic(client, "/position"), NT_DOUBLE, "double");
 
-  SetConfigFlags(FLAG_MSAA_4X_HINT);
-  InitWindow(render::kWindowWidth.in(pixels), render::kWindowHeight.in(pixels),
-             "reefscape elevator simulator");
-  SetTargetFPS(60);
+  render::Init({pixels(360), pixels(640), "Reefscape Elevator Simulator", 60});
 
   AngularVelocityUnit camera_omega = (degrees / second)(12);
 
-  Vector3 camera_position;
-  camera_position.x = meters(3).in(raylib_unit);
-  camera_position.y = inches(70.0).in(raylib_unit);
-  camera_position.z = meters(0).in(raylib_unit);
-
-  Vector3 camera_target;
-  camera_target.x = meters(0).in(raylib_unit);
-  camera_target.y = inches(36.0).in(raylib_unit);
-  camera_target.z = meters(0).in(raylib_unit);
-
-  Vector3 up{0, 1, 0};
-
-  Camera camera;
-  camera.position = camera_position;
-  camera.target = camera_target;
-  camera.up = up;
-  camera.fovy = 45;
-  camera.projection = CAMERA_PERSPECTIVE;
+  Camera camera =
+      render::InitCamera({meters(3), inches(70.0), meters(0)},
+                         {meters(0), inches(36.0), meters(0)}, degrees(45));
 
   while (!WindowShouldClose()) {
     TimeUnit elapsed_time = seconds(GetFrameTime());
+    camera.position =
+        render::SpinZ(camera.position, camera_omega * elapsed_time);
 
-    DisplacementUnit position = meters(nt::GetDouble(sub, 0.0));
+    DisplacementUnit elevator_position = meters(nt::GetDouble(sub, 0.0));
 
-    camera.position = Vector3RotateByAxisAngle(
-        camera.position, up, (camera_omega * elapsed_time).in(radians));
-
-    BeginDrawing();
-    ClearBackground(WHITE);
-    BeginMode3D(camera);
-    render::DrawRobot(position);
-    DrawPlane(Vector3{0, 0, 0}, Vector2{1000, 1000}, LIGHTGRAY);
-    EndMode3D();
-    EndDrawing();
+    render::Render(camera, elevator_position);
   }
 
   CloseWindow();

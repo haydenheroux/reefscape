@@ -3,31 +3,27 @@
 #include "raylib.h"
 #include "units.hh"
 
-const Color k5112Green = {0, 167, 74, 255};
-const Color k5112GreenShadow = {0, 148, 91, 255};
-
-namespace units {
-
-struct Pixels : decltype(Meters{} / mag<256>()) {
-  static constexpr const char label[] = "px";
-};
-constexpr auto pixel = SingularNameFor<Pixels>{};
-constexpr auto pixels = QuantityMaker<Pixels>{};
-constexpr auto pixels_pt = QuantityPointMaker<Pixels>{};
-
-struct RaylibUnits : decltype(Meters{} / mag<4>()) {
-  static constexpr const char label[] = "vu";
-};
-constexpr auto raylib_unit = SingularNameFor<RaylibUnits>{};
-constexpr auto raylib_units = QuantityMaker<RaylibUnits>{};
-constexpr auto raylib_unit_pt = QuantityPointMaker<RaylibUnits>{};
-}; // namespace units
-
 namespace render {
 using namespace units;
+struct Window {
+  DisplacementUnit width;
+  DisplacementUnit height;
+  std::string title;
+  int fps;
+};
 
-const DisplacementUnit kWindowWidth = pixels(360);
-const DisplacementUnit kWindowHeight = pixels(640);
+void Init(const Window &window);
 
-void DrawRobot(units::DisplacementUnit position);
+struct UnitVector3 {
+  DisplacementUnit x;
+  DisplacementUnit y;
+  DisplacementUnit z;
+};
+
+Camera InitCamera(const UnitVector3 &position, const UnitVector3 &target,
+                  AngleUnit fov);
+
+void Render(const Camera &camera, DisplacementUnit elevator_position);
+
+Vector3 SpinZ(const Vector3 &position, AngleUnit angle);
 }; // namespace render

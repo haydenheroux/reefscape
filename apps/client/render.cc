@@ -1,11 +1,40 @@
 #include "render.hh"
-#include "robot.hh"
+#include "au/units/degrees.hh"
 #include "raylib.h"
+#include "raymath.h"
+#include "render_units.hh"
+#include "robot.hh"
 #include "units.hh"
 #include <cassert>
 
 namespace render {
 using namespace robot;
+
+const Color k5112Green = {0, 167, 74, 255};
+const Color k5112GreenShadow = {0, 148, 91, 255};
+
+void Init(const Window &window) {
+  SetConfigFlags(FLAG_MSAA_4X_HINT);
+  InitWindow(window.width.in(pixels), window.height.in(pixels),
+             window.title.c_str());
+  SetTargetFPS(window.fps);
+}
+
+Camera InitCamera(const UnitVector3 &position, const UnitVector3 &target,
+                  AngleUnit fov) {
+  Camera camera;
+  camera.position.x = position.x.in(raylib_unit);
+  camera.position.y = position.y.in(raylib_unit);
+  camera.position.z = position.z.in(raylib_unit);
+  camera.target.x = target.x.in(raylib_unit);
+  camera.target.y = target.y.in(raylib_unit);
+  camera.target.z = target.z.in(raylib_unit);
+  camera.up = {0, 1, 0};
+  camera.fovy = fov.in(degrees);
+  camera.projection = CAMERA_PERSPECTIVE;
+  return camera;
+}
+
 
 void DrawStandoff(Vector3 start, DisplacementUnit length,
                   DisplacementUnit radius) {
@@ -220,5 +249,19 @@ void DrawRobot(DisplacementUnit elevator_position) {
       (kCarriageToStageThreeAtBottom + elevator_percent * kCarriageTravel)
           .in(raylib_units);
   DrawCarriage(carriage_origin);
+}
+
+void Render(const Camera &camera, DisplacementUnit elevator_position) {
+  BeginDrawing();
+  ClearBackground(WHITE);
+  BeginMode3D(camera);
+  DrawRobot(elevator_position);
+  DrawPlane(Vector3{0, 0, 0}, Vector2{1000, 1000}, LIGHTGRAY);
+  EndMode3D();
+  EndDrawing();
+}
+
+Vector3 SpinZ(const Vector3 &position, AngleUnit angle) {
+  return Vector3RotateByAxisAngle(position, {0, 1, 0}, angle.in(radians));
 }
 }; // namespace render
