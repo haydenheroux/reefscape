@@ -1,3 +1,7 @@
+#include <chrono>
+#include <cmath>
+#include <thread>
+
 #include "Eigen.hh"
 #include "Elevator.hh"
 #include "au/units/amperes.hh"
@@ -5,12 +9,9 @@
 #include "au/units/minutes.hh"
 #include "au/units/pounds_mass.hh"
 #include "au/units/volts.hh"
-#include "robot.hh"
 #include "ntcore_cpp.h"
+#include "robot.hh"
 #include "units.hh"
-#include <chrono>
-#include <cmath>
-#include <thread>
 
 using namespace units;
 using namespace robot;

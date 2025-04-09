@@ -16,4 +16,4 @@ struct RaylibUnits : decltype(Meters{} / mag<4>()) {
 constexpr auto raylib_unit = SingularNameFor<RaylibUnits>{};
 constexpr auto raylib_units = QuantityMaker<RaylibUnits>{};
 constexpr auto raylib_unit_pt = QuantityPointMaker<RaylibUnits>{};
-}; // namespace units
+};  // namespace units

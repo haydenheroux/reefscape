@@ -17,8 +17,12 @@ struct Elevator {
 
   Elevator(RatioUnit gear_ratio, DisplacementUnit drum_radius, MassUnit mass,
            CurrentUnit max_current, DisplacementUnit max_travel, Motor motor)
-      : gear_ratio(gear_ratio), drum_radius(drum_radius), mass(mass),
-        max_current(max_current), max_travel(max_travel), motor(motor) {};
+      : gear_ratio(gear_ratio),
+        drum_radius(drum_radius),
+        mass(mass),
+        max_current(max_current),
+        max_travel(max_travel),
+        motor(motor) {};
 
   AngularVelocityUnit MotorVelocity(VelocityUnit velocity) const;
 
@@ -41,7 +45,7 @@ struct Elevator {
 };
 
 class ElevatorSim {
-public:
+ public:
   struct State {
     static const int Dimension = 2;
     Eigen::Vector<double, Dimension> vector;
@@ -121,7 +125,7 @@ public:
   State state;
   Input input;
 
-private:
+ private:
   // TODO(hayden): Reduce clutter by removing ::Dimension
   SystemMatrix<State::Dimension> continuous_system_;
   InputMatrix<State::Dimension, Input::Dimension> continuous_input_;
@@ -137,4 +141,4 @@ private:
   TimeUnit time_step_;
   Elevator elevator_;
 };
-} // namespace sim
+}  // namespace sim

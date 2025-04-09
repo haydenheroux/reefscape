@@ -1,8 +1,10 @@
 #include "Elevator.hh"
+
+#include <ctime>
+
 #include "Eigen.hh"
 #include "au/power_aliases.hh"
 #include "units.hh"
-#include <ctime>
 
 namespace sim {
 using namespace units;
@@ -68,8 +70,10 @@ VoltageUnit Elevator::LimitVoltage(VelocityUnit velocity,
 
 ElevatorSim::ElevatorSim(const Elevator &elevator, AccelerationUnit gravity,
                          TimeUnit time_step)
-    : time_step_(time_step), state(meters(0), (meters / second)(0)),
-      input(volts(0)), elevator_(elevator) {
+    : time_step_(time_step),
+      state(meters(0), (meters / second)(0)),
+      input(volts(0)),
+      elevator_(elevator) {
   continuous_system_ << 0, 1, 0,
       elevator.VelocityCoefficient().in((meters / squared(second)) /
                                         (meters / second));
@@ -95,7 +99,7 @@ ElevatorSim::Input ElevatorSim::OpposingGravity() const {
 
 void ElevatorSim::Update() {
   state = discrete_system_ * state.vector + discrete_input_ * input.vector +
-           discrete_gravity_;
+          discrete_gravity_;
   state = state.Clamped(meters(0), elevator_.max_travel);
 }
-}; // namespace sim
+};  // namespace sim

@@ -1,11 +1,13 @@
 #include "render.hh"
+
+#include <cassert>
+
 #include "au/units/degrees.hh"
 #include "raylib.h"
 #include "raymath.h"
 #include "render_units.hh"
 #include "robot.hh"
 #include "units.hh"
-#include <cassert>
 
 namespace render {
 using namespace robot;
@@ -34,7 +36,6 @@ Camera InitCamera(const UnitVector3 &position, const UnitVector3 &target,
   camera.projection = CAMERA_PERSPECTIVE;
   return camera;
 }
-
 
 void DrawStandoff(Vector3 start, DisplacementUnit length,
                   DisplacementUnit radius) {
@@ -264,4 +265,4 @@ void Render(const Camera &camera, DisplacementUnit elevator_position) {
 Vector3 SpinZ(const Vector3 &position, AngleUnit angle) {
   return Vector3RotateByAxisAngle(position, {0, 1, 0}, angle.in(radians));
 }
-}; // namespace render
+};  // namespace render

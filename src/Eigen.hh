@@ -1,17 +1,20 @@
 #pragma once
 
-#include "units.hh"
 #include <Eigen/Core>
 #include <unsupported/Eigen/MatrixFunctions>
 #include <utility>
 
+#include "units.hh"
+
 namespace sim {
-template <int States> using StateVector = Eigen::Vector<double, States>;
+template <int States>
+using StateVector = Eigen::Vector<double, States>;
 
 template <int States>
 using SystemMatrix = Eigen::Matrix<double, States, States>;
 
-template <int Inputs> using InputVector = Eigen::Vector<double, Inputs>;
+template <int Inputs>
+using InputVector = Eigen::Vector<double, Inputs>;
 
 template <int States, int Inputs>
 using InputMatrix = Eigen::Matrix<double, States, Inputs>;
@@ -23,9 +26,11 @@ template <int States, int Inputs>
 using InputLeftPseudoInverseMatrix = Eigen::Matrix<double, Inputs, States>;
 
 template <int States, int Inputs>
-std::pair<SystemMatrix<States>, InputMatrix<States, Inputs>> Discretize(
-    const std::pair<SystemMatrix<States>, InputMatrix<States, Inputs>> &AcBc,
-    units::TimeUnit sample_period) {
+using Matrices = std::pair<SystemMatrix<States>, InputMatrix<States, Inputs>>;
+
+template <int States, int Inputs>
+Matrices<States, Inputs> Discretize(Matrices<States, Inputs> &AcBc,
+                                    units::TimeUnit sample_period) {
   using BlockMatrix = Eigen::Matrix<double, States + Inputs, States + Inputs>;
 
   // M = ⎡ Ac Bc ⎤
@@ -45,10 +50,10 @@ std::pair<SystemMatrix<States>, InputMatrix<States, Inputs>> Discretize(
 }
 
 template <int States, int Inputs>
-InputLeftPseudoInverseMatrix<States, Inputs>
-PseudoInverse(const InputMatrix<States, Inputs> &Bc) {
+InputLeftPseudoInverseMatrix<States, Inputs> PseudoInverse(
+    const InputMatrix<States, Inputs> &Bc) {
   // Bc⁺ = (BcᵀBc)⁻¹Bcᵀ
   auto BcT = Bc.transpose();
   return (BcT * Bc).inverse() * BcT;
 }
-}; // namespace sim
+};  // namespace sim

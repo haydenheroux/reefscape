@@ -26,4 +26,4 @@ Camera InitCamera(const UnitVector3 &position, const UnitVector3 &target,
 void Render(const Camera &camera, DisplacementUnit elevator_position);
 
 Vector3 SpinZ(const Vector3 &position, AngleUnit angle);
-}; // namespace render
+};  // namespace render

@@ -17,8 +17,10 @@ struct Motor {
   Motor(VoltageUnit nominal_voltage, TorqueUnit stall_torque,
         CurrentUnit stall_current, AngularVelocityUnit free_speed,
         CurrentUnit free_current)
-      : nominal_voltage_(nominal_voltage), stall_torque_(stall_torque),
-        stall_current_(stall_current), free_speed_(free_speed),
+      : nominal_voltage_(nominal_voltage),
+        stall_torque_(stall_torque),
+        stall_current_(stall_current),
+        free_speed_(free_speed),
         free_current_(free_current),
         torque_constant_(stall_torque_ / stall_current_),
         resistance_(nominal_voltage_ / stall_current_),
@@ -31,4 +33,4 @@ struct Motor {
                  free_current_ * num_motors);
   }
 };
-} // namespace sim
+}  // namespace sim

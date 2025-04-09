@@ -48,4 +48,4 @@ using VelocityCoefficientUnit =
 
 using VoltageCoefficientUnit =
     QuantityD<decltype((Meters{} / squared(Seconds{})) / (Volts{}))>;
-} // namespace units
+}  // namespace units

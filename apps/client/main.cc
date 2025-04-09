@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "au/units/inches.hh"
 #include "ntcore_c.h"
 #include "ntcore_cpp.h"
@@ -6,7 +8,6 @@
 #include "render.hh"
 #include "render_units.hh"
 #include "units.hh"
-#include <cmath>
 
 using namespace units;
 

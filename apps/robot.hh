@@ -54,5 +54,4 @@ const DisplacementUnit kCarriageHeight = inches(6.0);
 
 const DisplacementUnit kTotalTravel =
     kStageTwoTravel + kStageThreeTravel + kCarriageTravel;
-} // namespace sim
-
+}  // namespace robot
