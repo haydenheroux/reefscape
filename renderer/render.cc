@@ -265,4 +265,9 @@ void Render(const Camera &camera, DisplacementUnit elevator_position) {
 Vector3 SpinZ(const Vector3 &position, AngleUnit angle) {
   return Vector3RotateByAxisAngle(position, {0, 1, 0}, angle.in(radians));
 }
+
+void TextWriter::Write(const std::string &text) {
+  DrawText(text.c_str(), 0, line_number * font_size, font_size, color);
+  line_number++;
+}
 };  // namespace render

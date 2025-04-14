@@ -26,4 +26,13 @@ Camera InitCamera(const UnitVector3 &position, const UnitVector3 &target,
 void Render(const Camera &camera, DisplacementUnit elevator_position);
 
 Vector3 SpinZ(const Vector3 &position, AngleUnit angle);
+
+struct TextWriter {
+  unsigned int line_number = 0;
+  unsigned int font_size = 10;
+  Color color = BLACK;
+
+  void Reset() { line_number = 0; };
+  void Write(const std::string &text);
+};
 };  // namespace render
