@@ -1,6 +1,6 @@
 project(sim)
 
-add_executable(sim main.cc)
+add_executable(sim main.cc publisher.cc)
 
 target_link_libraries(
     sim

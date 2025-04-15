@@ -13,7 +13,8 @@
 #include "au/units/seconds.hh"
 #include "au/units/volts.hh"
 
-namespace units {
+namespace reefscape {
+
 using namespace au;
 
 using TimeUnit = QuantityD<Seconds>;
@@ -48,4 +49,5 @@ using VelocityCoefficientUnit =
 
 using VoltageCoefficientUnit =
     QuantityD<decltype((Meters{} / squared(Seconds{})) / (Volts{}))>;
-}  // namespace units
+
+}  // namespace reefscape

@@ -3,8 +3,8 @@
 #include "raylib.h"
 #include "units.hh"
 
-namespace render {
-using namespace units;
+namespace reefscape {
+
 struct Window {
   DisplacementUnit width;
   DisplacementUnit height;
@@ -35,4 +35,5 @@ struct TextWriter {
   void Reset() { line_number = 0; };
   void Write(const std::string &text);
 };
-};  // namespace render
+
+};  // namespace reefscape

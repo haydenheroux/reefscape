@@ -1,11 +1,13 @@
 #pragma once
 
+#include <string_view>
+
 #include "au/math.hh"
 #include "au/units/inches.hh"
 #include "units.hh"
 
-namespace robot {
-using namespace units;
+namespace reefscape {
+
 const DisplacementUnit kTubeWidth = inches(1);
 const DisplacementUnit kTubeHeight = inches(2);
 const DisplacementUnit kThinTubeWidth = inches(1);
@@ -54,4 +56,13 @@ const DisplacementUnit kCarriageHeight = inches(6.0);
 
 const DisplacementUnit kTotalTravel =
     kStageTwoTravel + kStageThreeTravel + kCarriageTravel;
-}  // namespace robot
+
+const std::string_view kElevatorPositionKey = "/elevator/position";
+const std::string_view kElevatorVelocityKey = "/elevator/velocity";
+const std::string_view kElevatorReferencePositionKey =
+    "/elevator/reference_position";
+const std::string_view kElevatorReferenceVelocityKey =
+    "/elevator/reference_velocity";
+const std::string_view kElevatorVoltageKey = "/elevator/voltage";
+
+}  // namespace reefscape

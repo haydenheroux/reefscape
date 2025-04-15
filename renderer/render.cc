@@ -9,8 +9,7 @@
 #include "robot.hh"
 #include "units.hh"
 
-namespace render {
-using namespace robot;
+namespace reefscape {
 
 const Color k5112Green = {0, 167, 74, 255};
 const Color k5112GreenShadow = {0, 148, 91, 255};
@@ -270,4 +269,5 @@ void TextWriter::Write(const std::string &text) {
   DrawText(text.c_str(), 0, line_number * font_size, font_size, color);
   line_number++;
 }
-};  // namespace render
+
+};  // namespace reefscape

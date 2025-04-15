@@ -6,7 +6,8 @@
 
 #include "units.hh"
 
-namespace sim {
+namespace reefscape {
+
 template <int States>
 using StateVector = Eigen::Vector<double, States>;
 
@@ -30,7 +31,7 @@ using Matrices = std::pair<SystemMatrix<States>, InputMatrix<States, Inputs>>;
 
 template <int States, int Inputs>
 Matrices<States, Inputs> Discretize(Matrices<States, Inputs> &AcBc,
-                                    units::TimeUnit sample_period) {
+                                    TimeUnit sample_period) {
   using BlockMatrix = Eigen::Matrix<double, States + Inputs, States + Inputs>;
 
   // M = ⎡ Ac Bc ⎤
@@ -42,7 +43,7 @@ Matrices<States, Inputs> Discretize(Matrices<States, Inputs> &AcBc,
 
   // ϕ = ⎡ Ad Bd ⎤
   //     ⎣ 0  I  ⎦
-  BlockMatrix phi = (M * sample_period.in(units::seconds)).exp();
+  BlockMatrix phi = (M * sample_period.in(seconds)).exp();
   SystemMatrix<States> Ad = phi.template block<States, States>(0, 0);
   InputMatrix<States, Inputs> Bd =
       phi.template block<States, Inputs>(0, States);
@@ -56,4 +57,5 @@ InputLeftPseudoInverseMatrix<States, Inputs> PseudoInverse(
   auto BcT = Bc.transpose();
   return (BcT * Bc).inverse() * BcT;
 }
-};  // namespace sim
+
+};  // namespace reefscape

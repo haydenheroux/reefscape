@@ -3,11 +3,11 @@
 #include "Eigen.hh"
 #include "Motor.hh"
 #include "au/math.hh"
-#include "units.hh"
 
-namespace sim {
-using namespace units;
+namespace reefscape {
+
 struct Elevator {
+  // NOTE(hayden): Gear ratio is output over input
   RatioUnit gear_ratio;
   DisplacementUnit drum_radius;
   MassUnit mass;
@@ -141,4 +141,4 @@ class ElevatorSim {
   TimeUnit time_step_;
   Elevator elevator_;
 };
-}  // namespace sim
+}  // namespace reefscape

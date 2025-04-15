@@ -1,13 +1,12 @@
+
 #include "Elevator.hh"
 
 #include <ctime>
 
 #include "Eigen.hh"
 #include "au/power_aliases.hh"
-#include "units.hh"
 
-namespace sim {
-using namespace units;
+namespace reefscape {
 AngularVelocityUnit Elevator::MotorVelocity(VelocityUnit velocity) const {
   return velocity * radians(1) * gear_ratio / drum_radius;
 }
@@ -102,4 +101,4 @@ void ElevatorSim::Update() {
           discrete_gravity_;
   state = state.Clamped(meters(0), elevator_.max_travel);
 }
-};  // namespace sim
+};  // namespace reefscape
