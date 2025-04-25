@@ -2,7 +2,6 @@
 #include <cmath>
 #include <thread>
 
-#include "Eigen.hh"
 #include "Elevator.hh"
 #include "Motor.hh"
 #include "au/units/amperes.hh"
@@ -16,8 +15,8 @@
 #include "units.hh"
 
 using namespace reefscape;
-using State = ElevatorSim::State;
-using Input = ElevatorSim::Input;
+using State = AffineSystemSim::State;
+using Input = AffineSystemSim::Input;
 
 int main() {
   Elevator elevator{gear_ratio(5),   0.5 * inches(1.273),
@@ -28,23 +27,22 @@ int main() {
   nt::StartServer(server, "", "127.0.0.1", 0, 5810);
   Publisher publisher{server};
 
-  TimeUnit time_step = (milli(seconds))(2.5);
-  auto chrono_time_step =
-      std::chrono::microseconds(time_step.in<int>(micro(seconds)));
+  TimeUnit time_step = (milli(seconds))(1);
+  auto wait_time = std::chrono::microseconds(time_step.in<int>(micro(seconds)));
   AccelerationUnit gravity = (meters / squared(second))(-9.81);
 
-  ElevatorSim sim{elevator, gravity, time_step};
+  AffineSystemSim sim{elevator, gravity, time_step};
 
   // TODO(hayden): Implement LQR to find the optimal K
   auto kP = (volts / meter)(191.2215);
   auto kD = (volts / (meters / second))(4.811);
-
   Eigen::Matrix<double, Input::Dimension, State::Dimension> K;
   K << kP.in(volts / meter), kD.in(volts / (meters / second));
 
+  // TODO Implement `TrapezoidTrajectory` construction from `Elevator`
   TrapezoidTrajectory profile;
   profile.max_acceleration = elevator.MaximumAcceleration();
-  profile.max_velocity = (meters / second)(4.0);
+  profile.max_velocity = (meters / second)(1.92);
 
   State reference = sim.state;
   State goal{kTotalTravel, (meters / second)(0)};
@@ -64,12 +62,14 @@ int main() {
 
     State error = reference - sim.state;
     sim.input = K * error.vector;
-    sim.input += sim.OpposingGravity();
+    sim.input += sim.StabilizingInput();
+    sim.input =
+        elevator.LimitVoltage(sim.state.Velocity(), sim.input.Voltage());
     sim.Update();
 
-    publisher.Publish(sim.state, reference, sim.input);
+    publisher.Publish(sim.state, reference, sim.input, sim.state.At(goal));
 
     total_sim_time += time_step;
-    std::this_thread::sleep_for(chrono_time_step);
+    std::this_thread::sleep_for(wait_time);
   }
 }

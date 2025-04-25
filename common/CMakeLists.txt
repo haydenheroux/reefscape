@@ -3,6 +3,7 @@ project(common)
 # TODO(hayden): Glob did not find trajectory.cc when created
 file(
     GLOB common_src
+    src/AffineSystemSim.cc
     src/Elevator.cc
     src/trajectory.cc
 )

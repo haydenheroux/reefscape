@@ -64,5 +64,6 @@ const std::string_view kElevatorReferencePositionKey =
 const std::string_view kElevatorReferenceVelocityKey =
     "/elevator/reference_velocity";
 const std::string_view kElevatorVoltageKey = "/elevator/voltage";
+const std::string_view kElevatorAtGoalKey = "/elevator/at_goal";
 
 }  // namespace reefscape

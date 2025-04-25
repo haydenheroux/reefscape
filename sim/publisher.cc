@@ -20,15 +20,19 @@ Publisher::Publisher(NT_Inst instance) {
                   NT_DOUBLE, "double");
   voltage = nt::Publish(nt::GetTopic(instance, kElevatorVoltageKey), NT_DOUBLE,
                         "double");
+  at_goal = nt::Publish(nt::GetTopic(instance, kElevatorAtGoalKey), NT_BOOLEAN,
+                        "boolean");
 }
 
-void Publisher::Publish(ElevatorSim::State state, ElevatorSim::State reference,
-                        ElevatorSim::Input input) const {
+void Publisher::Publish(AffineSystemSim::State state,
+                        AffineSystemSim::State reference,
+                        AffineSystemSim::Input input, bool at_goal) const {
   nt::SetDouble(position, state.Position().in(meters));
   nt::SetDouble(velocity, state.Velocity().in(meters / second));
   nt::SetDouble(reference_position, reference.Position().in(meters));
   nt::SetDouble(reference_velocity, reference.Velocity().in(meters / second));
   nt::SetDouble(voltage, input.Voltage().in(volts));
+  nt::SetBoolean(this->at_goal, at_goal);
   nt::Flush(instance);
 }
 
