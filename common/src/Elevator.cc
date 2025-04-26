@@ -1,6 +1,8 @@
 #include "Elevator.hh"
 
 #include "au/math.hh"
+#include "input.hh"
+#include "state.hh"
 
 namespace reefscape {
 
@@ -51,23 +53,27 @@ VoltageUnit Elevator::LimitVoltage(VelocityUnit velocity,
   return voltage;
 }
 
-SystemMatrix<2> Elevator::ContinuousSystemMatrix() const {
+template <>
+SystemMatrix<PositionVelocityState::Dimension>
+Elevator::ContinuousSystemMatrix<PositionVelocityState>() const {
   auto velocity_coefficient =
       -1 * (gear_ratio * gear_ratio * motor.torque_constant_ * radians(1)) /
       (motor.resistance_ * drum_radius * drum_radius * mass *
        motor.angular_velocity_constant_);
 
-  SystemMatrix<2> result;
+  SystemMatrix<PositionVelocityState::Dimension> result;
   result << 0, 1, 0,
       velocity_coefficient.in((meters / squared(second)) / (meters / second));
   return result;
 }
 
-InputMatrix<2, 1> Elevator::ContinuousInputMatrix() const {
+template <>
+InputMatrix<PositionVelocityState::Dimension, VoltageInput::Dimension>
+Elevator::ContinuousInputMatrix<PositionVelocityState, VoltageInput>() const {
   auto voltage_coefficient = (gear_ratio * motor.torque_constant_) /
                              (motor.resistance_ * mass * drum_radius);
 
-  InputMatrix<2, 1> result;
+  InputMatrix<PositionVelocityState::Dimension, VoltageInput::Dimension> result;
   result << 0, voltage_coefficient.in((meters / squared(second)) / volt);
   return result;
 }

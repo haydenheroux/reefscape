@@ -8,6 +8,11 @@
 
 namespace reefscape {
 
+template <typename T>
+concept HasDimension = requires {
+  { T::Dimension };
+};
+
 template <int States>
 using StateVector = Eigen::Vector<double, States>;
 

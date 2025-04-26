@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AffineSystemSim.hh"
+#include "state.hh"
 #include "units.hh"
 
 namespace reefscape {
@@ -9,8 +9,9 @@ struct TrapezoidTrajectory {
   VelocityUnit max_velocity;
   AccelerationUnit max_acceleration;
 
-  AffineSystemSim::State Calculate(TimeUnit time_step, AffineSystemSim::State state,
-                               AffineSystemSim::State goal);
+  PositionVelocityState Calculate(TimeUnit time_step,
+                                  PositionVelocityState state,
+                                  PositionVelocityState goal);
 };
 
 }  // namespace reefscape

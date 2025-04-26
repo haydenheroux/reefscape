@@ -2,6 +2,7 @@
 #include <cmath>
 #include <thread>
 
+#include "AffineSystemSim.hh"
 #include "Elevator.hh"
 #include "Motor.hh"
 #include "au/units/amperes.hh"
@@ -15,8 +16,8 @@
 #include "units.hh"
 
 using namespace reefscape;
-using State = AffineSystemSim::State;
-using Input = AffineSystemSim::Input;
+using State = PositionVelocityState;
+using Input = VoltageInput;
 
 int main() {
   Elevator elevator{gear_ratio(5),   0.5 * inches(1.273),
@@ -31,7 +32,7 @@ int main() {
   auto wait_time = std::chrono::microseconds(time_step.in<int>(micro(seconds)));
   AccelerationUnit gravity = (meters / squared(second))(-9.81);
 
-  AffineSystemSim sim{elevator, gravity, time_step};
+  AffineSystemSim<State, Input> sim{elevator, gravity, time_step};
 
   // TODO(hayden): Implement LQR to find the optimal K
   auto kP = (volts / meter)(191.2215);
@@ -44,8 +45,11 @@ int main() {
   profile.max_acceleration = elevator.MaximumAcceleration();
   profile.max_velocity = (meters / second)(1.92);
 
-  State reference = sim.state;
-  State goal{kTotalTravel, (meters / second)(0)};
+  State top{kTotalTravel, (meters / second)(0)};
+  State bottom{meters(0), (meters / second)(0)};
+
+  State reference = bottom;
+  State goal = top;
 
   TimeUnit total_sim_time = seconds(0);
 
@@ -53,21 +57,24 @@ int main() {
     // TODO(hayden): Make this event-based
     TimeUnit cycle_time = au::fmod(total_sim_time, seconds(6));
     if (cycle_time < seconds(3)) {
-      goal = State{kTotalTravel, (meters / second)(0)};
+      goal = top;
     } else {
-      goal = State{meters(0), (meters / second)(0)};
+      goal = bottom;
     }
 
     reference = profile.Calculate(time_step, reference, goal);
+    State error{reference.vector - sim.State().vector};
 
-    State error = reference - sim.state;
-    sim.input = K * error.vector;
-    sim.input += sim.StabilizingInput();
-    sim.input =
-        elevator.LimitVoltage(sim.state.Velocity(), sim.input.Voltage());
-    sim.Update();
+    Input input{K * error.vector + sim.StabilizingInput().vector};
+    VoltageUnit limited_voltage =
+        elevator.LimitVoltage(sim.State().Velocity(), input.Voltage());
+    Input limited_input{limited_voltage};
+    sim.Update(limited_input);
+    sim.SetState(sim.State().PositionClamped(meters(0), elevator.max_travel));
 
-    publisher.Publish(sim.state, reference, sim.input, sim.state.At(goal));
+    State new_state = sim.State();
+    bool at_goal = new_state.At(goal);
+    publisher.Publish(sim.State(), reference, sim.Input(), at_goal);
 
     total_sim_time += time_step;
     std::this_thread::sleep_for(wait_time);

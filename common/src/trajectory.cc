@@ -2,9 +2,9 @@
 
 namespace reefscape {
 
-AffineSystemSim::State TrapezoidTrajectory::Calculate(TimeUnit time_step,
-                                                  AffineSystemSim::State state,
-                                                  AffineSystemSim::State goal) {
+PositionVelocityState TrapezoidTrajectory::Calculate(
+    TimeUnit time_step, PositionVelocityState state,
+    PositionVelocityState goal) {
   // NOTE(hayden): Algorithm assumes positive motion
   bool flip = goal.Position() < state.Position();
   if (flip) {
@@ -36,11 +36,12 @@ AffineSystemSim::State TrapezoidTrajectory::Calculate(TimeUnit time_step,
   TimeUnit end_cruise = end_acceleration + cruise_distance / max_velocity;
   TimeUnit end_deceleration = end_cruise + acceleration_time - end_time;
 
-  AffineSystemSim::State result{state};
+  PositionVelocityState result{state};
 
   if (time_step < end_acceleration) {
     result.SetPosition(result.Position() +
-                       (state.Velocity() + 0.5 * time_step * max_acceleration) * time_step);
+                       (state.Velocity() + 0.5 * time_step * max_acceleration) *
+                           time_step);
     result.SetVelocity(result.Velocity() + time_step * max_acceleration);
   } else if (time_step <= end_cruise) {
     result.SetPosition(

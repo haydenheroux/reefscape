@@ -1,7 +1,8 @@
 #pragma once
 
-#include "AffineSystemSim.hh"
+#include "input.hh"
 #include "ntcore_c.h"
+#include "state.hh"
 
 namespace reefscape {
 
@@ -16,8 +17,8 @@ struct Publisher {
 
   Publisher(NT_Inst instance);
 
-  void Publish(AffineSystemSim::State state, AffineSystemSim::State reference,
-               AffineSystemSim::Input input, bool at_goal) const;
+  void Publish(PositionVelocityState state, PositionVelocityState reference,
+               VoltageInput input, bool at_goal) const;
 };
 
 };  // namespace reefscape

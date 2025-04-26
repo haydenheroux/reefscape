@@ -37,9 +37,13 @@ struct Elevator {
 
   VoltageUnit LimitVoltage(VelocityUnit velocity, VoltageUnit voltage) const;
 
-  SystemMatrix<2> ContinuousSystemMatrix() const;
+  template <class State>
+    requires HasDimension<State>
+  SystemMatrix<State::Dimension> ContinuousSystemMatrix() const;
 
-  InputMatrix<2, 1> ContinuousInputMatrix() const;
+  template <class State, class Input>
+    requires HasDimension<State> && HasDimension<Input>
+  InputMatrix<State::Dimension, Input::Dimension> ContinuousInputMatrix() const;
 };
 
 }  // namespace reefscape

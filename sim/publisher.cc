@@ -1,7 +1,9 @@
 #include "publisher.hh"
 
+#include "input.hh"
 #include "ntcore_cpp.h"
 #include "robot.hh"
+#include "state.hh"
 
 namespace reefscape {
 
@@ -24,9 +26,9 @@ Publisher::Publisher(NT_Inst instance) {
                         "boolean");
 }
 
-void Publisher::Publish(AffineSystemSim::State state,
-                        AffineSystemSim::State reference,
-                        AffineSystemSim::Input input, bool at_goal) const {
+void Publisher::Publish(PositionVelocityState state,
+                        PositionVelocityState reference, VoltageInput input,
+                        bool at_goal) const {
   nt::SetDouble(position, state.Position().in(meters));
   nt::SetDouble(velocity, state.Velocity().in(meters / second));
   nt::SetDouble(reference_position, reference.Position().in(meters));

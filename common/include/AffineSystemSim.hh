@@ -2,117 +2,77 @@
 
 #include "Eigen.hh"
 #include "Elevator.hh"
-#include "au/math.hh"
 #include "units.hh"
 
 namespace reefscape {
 
-// TODO(hayden): Scope to `AffineSystemSim::State`
-const DisplacementUnit kPositionTolerance = (centi(meters))(1);
-const VelocityUnit kVelocityToleracne = (centi(meters) / second)(1);
-
+template <class StateType, class InputType>
+  requires HasDimension<StateType> && HasDimension<InputType>
 class AffineSystemSim {
+  static constexpr int States = StateType::Dimension;
+  static constexpr int Inputs = InputType::Dimension;
+
  public:
-  struct State {
-    static const int Dimension = 2;
-    Eigen::Vector<double, Dimension> vector;
-
-    State(DisplacementUnit position, VelocityUnit velocity) {
-      SetPosition(position);
-      SetVelocity(velocity);
-    }
-    State(const StateVector<Dimension> &state) {
-      SetPosition(meters(state[0]));
-      SetVelocity((meters / second)(state[1]));
-    }
-    State &operator=(const StateVector<Dimension> &state) {
-      this->vector[0] = state[0];
-      this->vector[1] = state[1];
-      return *this;
-    }
-    State operator-(const State &state) { return State{vector - state.vector}; }
-
-    DisplacementUnit Position() const { return meters(vector[0]); }
-    VelocityUnit Velocity() const { return (meters / second)(vector[1]); }
-    void SetPosition(DisplacementUnit position) {
-      vector[0] = position.in(meters);
-    }
-    void SetVelocity(VelocityUnit velocity) {
-      vector[1] = velocity.in(meters / second);
-    }
-
-    State ClampPosition(DisplacementUnit min, DisplacementUnit max) const {
-      DisplacementUnit position = Position();
-
-      if (position > max) {
-        return {max, Velocity()};
-      } else if (position < min) {
-        return {min, Velocity()};
-      }
-
-      return *this;
-    }
-
-    bool At(State other) const {
-      bool position_in_tolerance =
-          au::abs(Position() - other.Position()) < kPositionTolerance;
-      bool velocity_in_tolerance =
-          au::abs(Velocity() - other.Velocity()) < kVelocityToleracne;
-      return position_in_tolerance && velocity_in_tolerance;
-    }
-  };
-
-  struct Input {
-    static const int Dimension = 1;
-    InputVector<Dimension> vector;
-
-    Input(VoltageUnit voltage) { SetVoltage(voltage); }
-    Input(const InputVector<Dimension> &input) { this->vector[0] = input[0]; }
-    Input &operator=(const InputVector<Dimension> &input) {
-      this->vector[0] = input[0];
-      return *this;
-    }
-    Input &operator+=(const Input &input) {
-      vector += input.vector;
-      return *this;
-    }
-
-    VoltageUnit Voltage() const { return volts(vector[0]); }
-    void SetVoltage(VoltageUnit voltage) { vector[0] = voltage.in(volts); }
-  };
-
-  AffineSystemSim(
-      SystemMatrix<State::Dimension> continuous_system,
-      InputMatrix<State::Dimension, Input::Dimension> continuous_input,
-      Eigen::Vector<double, State::Dimension> continuous_constant,
-      TimeUnit time_step);
+  AffineSystemSim(SystemMatrix<States> continuous_system,
+                  InputMatrix<States, Inputs> continuous_input,
+                  StateVector<States> continuous_constant, TimeUnit time_step)
+      : continuous_system_(continuous_system),
+        continuous_input_(continuous_input),
+        continuous_constant_(continuous_constant),
+        state_({}),
+        input_({}) {
+    auto continuous_matrices =
+        std::make_pair(continuous_system_, continuous_input_);
+    auto discretized_matrices = Discretize(continuous_matrices, time_step);
+    discrete_system_ = discretized_matrices.first;
+    discrete_input_ = discretized_matrices.second;
+    continuous_input_pseudoinverse_ = PseudoInverse(continuous_input_);
+    discrete_constant_ << discrete_input_ * continuous_input_pseudoinverse_ *
+                              continuous_constant_;
+  }
 
   AffineSystemSim(const Elevator &elevator, AccelerationUnit gravity,
-                  TimeUnit time_step);
+                  TimeUnit time_step)
+      : AffineSystemSim(
+            elevator.ContinuousSystemMatrix<StateType>(),
+            elevator.ContinuousInputMatrix<StateType, InputType>(),
+            // TODO(hayden): This isn't compatible with other state types
+            StateVector<States>{0, gravity.in(meters / squared(second))},
+            time_step) {}
 
-  Input StabilizingInput() const;
+  void Update(InputType input) {
+    // TODO(hayden): Add `.vector` type constraint for `InputType` or make
+    // `InputType` transparent
+    input_ = input.vector;
+    state_ = discrete_system_ * state_ + discrete_input_ * input_ +
+             discrete_constant_;
+  }
 
-  void Update();
+  StateType State() const { return StateType{state_}; }
 
-  State state;
-  Input input;
+  void SetState(StateType state) {
+    // TODO(hayden): Add `vector` type constraint for `StateType` or make
+    // `StateType` transparent
+    state_ = state.vector;
+  }
+
+  InputType Input() const { return InputType{input_}; }
+
+  // TODO(hayden): Add constructable type constraint for input
+  InputType StabilizingInput() const {
+    return {-1 * continuous_input_pseudoinverse_ * continuous_constant_};
+  }
 
  private:
-  // TODO(hayden): Reduce clutter by removing ::Dimension
-  SystemMatrix<State::Dimension> continuous_system_;
-  InputMatrix<State::Dimension, Input::Dimension> continuous_input_;
-  InputLeftPseudoInverseMatrix<State::Dimension, Input::Dimension>
-      continuous_input_pseudoinverse_;
-  SystemMatrix<State::Dimension> discrete_system_;
-  InputMatrix<State::Dimension, Input::Dimension> discrete_input_;
-  // TODO(hayden): Introduce a scheme / concept? for vectors with the same
-  // number of states / can be converted to states but are not representable by
-  // an ElevatorState (these are state derivatives, not actual states)
-  Eigen::Vector<double, State::Dimension> continuous_constant_;
-  Eigen::Vector<double, State::Dimension> discrete_constant_;
-  TimeUnit time_step_;
-  DisplacementUnit min_position_;
-  DisplacementUnit max_position_;
+  SystemMatrix<States> continuous_system_;
+  InputMatrix<States, Inputs> continuous_input_;
+  InputLeftPseudoInverseMatrix<States, Inputs> continuous_input_pseudoinverse_;
+  SystemMatrix<States> discrete_system_;
+  InputMatrix<States, Inputs> discrete_input_;
+  StateVector<States> continuous_constant_;
+  StateVector<States> discrete_constant_;
+  StateVector<States> state_;
+  InputVector<Inputs> input_;
 };
 
 }  // namespace reefscape
