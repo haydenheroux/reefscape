@@ -24,10 +24,16 @@ struct Elevator {
         max_travel(max_travel),
         motor(motor) {};
 
+  VelocityCoefficientUnit VelocityCoefficient() const;
+
+  VoltageCoefficientUnit VoltageCoefficient() const;
+
   AngularVelocityUnit MotorVelocity(VelocityUnit velocity) const;
 
   AccelerationUnit Acceleration(VelocityUnit velocity,
                                 VoltageUnit voltage) const;
+
+  VelocityUnit MaximumVelocity() const;
 
   AccelerationUnit MaximumAcceleration() const;
 

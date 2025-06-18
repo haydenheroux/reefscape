@@ -1,5 +1,4 @@
 #include <chrono>
-#include <cmath>
 #include <thread>
 
 #include "AffineSystemSim.hh"
@@ -40,10 +39,7 @@ int main() {
   Eigen::Matrix<double, Input::Dimension, State::Dimension> K;
   K << kP.in(volts / meter), kD.in(volts / (meters / second));
 
-  // TODO Implement `TrapezoidTrajectory` construction from `Elevator`
-  TrapezoidTrajectory profile;
-  profile.max_acceleration = elevator.MaximumAcceleration();
-  profile.max_velocity = (meters / second)(1.92);
+  TrapezoidTrajectory profile{elevator};
 
   State top{kTotalTravel, (meters / second)(0)};
   State bottom{meters(0), (meters / second)(0)};

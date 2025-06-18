@@ -3,8 +3,20 @@
 #include "au/math.hh"
 #include "input.hh"
 #include "state.hh"
+#include "units.hh"
 
 namespace reefscape {
+
+VelocityCoefficientUnit Elevator::VelocityCoefficient() const {
+  return -1 * (gear_ratio * gear_ratio * motor.torque_constant_ * radians(1)) /
+         (motor.resistance_ * drum_radius * drum_radius * mass *
+          motor.angular_velocity_constant_);
+}
+
+VoltageCoefficientUnit Elevator::VoltageCoefficient() const {
+  return (gear_ratio * motor.torque_constant_) /
+         (motor.resistance_ * mass * drum_radius);
+}
 
 AngularVelocityUnit Elevator::MotorVelocity(VelocityUnit velocity) const {
   return velocity * radians(1) * gear_ratio / drum_radius;
@@ -13,6 +25,13 @@ AngularVelocityUnit Elevator::MotorVelocity(VelocityUnit velocity) const {
 AccelerationUnit Elevator::Acceleration(VelocityUnit velocity,
                                         VoltageUnit voltage) const {
   return Force(velocity, voltage) / mass;
+}
+
+VelocityUnit Elevator::MaximumVelocity() const {
+  // Maximize ω with dω/dt = (velocity_coefficient)·ω +
+  // (voltage_coefficient)·(motor.nominal_voltage)
+  return -1 * motor.nominal_voltage_ * VoltageCoefficient() /
+         VelocityCoefficient();
 }
 
 AccelerationUnit Elevator::MaximumAcceleration() const {
@@ -56,25 +75,17 @@ VoltageUnit Elevator::LimitVoltage(VelocityUnit velocity,
 template <>
 SystemMatrix<PositionVelocityState::Dimension>
 Elevator::ContinuousSystemMatrix<PositionVelocityState>() const {
-  auto velocity_coefficient =
-      -1 * (gear_ratio * gear_ratio * motor.torque_constant_ * radians(1)) /
-      (motor.resistance_ * drum_radius * drum_radius * mass *
-       motor.angular_velocity_constant_);
-
   SystemMatrix<PositionVelocityState::Dimension> result;
   result << 0, 1, 0,
-      velocity_coefficient.in((meters / squared(second)) / (meters / second));
+      VelocityCoefficient().in((meters / squared(second)) / (meters / second));
   return result;
 }
 
 template <>
 InputMatrix<PositionVelocityState::Dimension, VoltageInput::Dimension>
 Elevator::ContinuousInputMatrix<PositionVelocityState, VoltageInput>() const {
-  auto voltage_coefficient = (gear_ratio * motor.torque_constant_) /
-                             (motor.resistance_ * mass * drum_radius);
-
   InputMatrix<PositionVelocityState::Dimension, VoltageInput::Dimension> result;
-  result << 0, voltage_coefficient.in((meters / squared(second)) / volt);
+  result << 0, VoltageCoefficient().in((meters / squared(second)) / volt);
   return result;
 }
 
