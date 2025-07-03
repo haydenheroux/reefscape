@@ -9,7 +9,7 @@
 #include "au/units/pounds_mass.hh"
 #include "au/units/volts.hh"
 #include "ntcore_cpp.h"
-#include "publisher.hh"
+#include "pubsub.hh"
 #include "robot.hh"
 #include "trajectory.hh"
 #include "units.hh"
