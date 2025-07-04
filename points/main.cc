@@ -3,9 +3,13 @@
 #include "ntcore_cpp.h"
 #include "pubsub.hh"
 #include "raylib.h"
+#include "raymath.h"
+#include "rlgl.h"
 #include "units.hh"
 
 using namespace reefscape;
+
+const int buffer_size = 2000; 
 
 struct Point {
   int tick;
@@ -14,25 +18,27 @@ struct Point {
   VoltageUnit voltage;
 
   Vector3 Position() const;
-  Color PointColor() const;
+  double Hue() const;
 };
 
 Vector3 Point::Position() const {
   float position_ = position.in(meters);
   float velocity_ = velocity.in(meters / second);
-  float time = (tick % 480) / 960.0;
-  return Vector3{position_, time, velocity_};
+  float time = tick / (2.0 * buffer_size);
+  return Vector3{velocity_, time, position_};
 }
 
-double map(double in, double in_min, double in_max, double out_min, double out_max) {
+double map(double in, double in_min, double in_max, double out_min,
+           double out_max) {
   return ((in - in_min) / (in_max - in_min)) * (out_max - out_min) + out_min;
 }
 
-Color Point::PointColor() const {
-  float hue = map(voltage.in(volts), -12, 12, 165, 265);
-  float saturation = 1;
-  float value = 1;
-  return ColorFromHSV(hue, saturation, value);
+double Point::Hue() const {
+  if (voltage < volts(0)) {
+    return map(clamp(voltage, volts(-12), volts(0)).in(volts), -12, 0, 180, 210);
+  } else {
+    return map(clamp(voltage, volts(0), volts(12)).in(volts), 0, 12, 0, 30);
+  }
 }
 
 struct PointBuffer {
@@ -65,7 +71,7 @@ int main() {
   SetTargetFPS(240);
   DisableCursor();
 
-  PointBuffer points{30000};
+  PointBuffer points{buffer_size};
 
   int tick = 0;
 
@@ -82,28 +88,26 @@ int main() {
     DisplacementUnit position = subscriber.Position();
     VelocityUnit velocity = subscriber.Velocity();
     VoltageUnit voltage = subscriber.Voltage();
-    Point point{tick, position, velocity, voltage};
+    int tick_ = tick++ % points.max_points_;
+    Point point{tick_, position, velocity, voltage};
     points.push(point);
-    tick++;
 
-
-    if (IsKeyPressed(KEY_P)) {
+    if (IsKeyPressed(KEY_SPACE)) {
       if (camera.projection == CAMERA_PERSPECTIVE) {
+        camera.position = Vector3{0, 5, 0};
+        camera.target = Vector3{0, 0, 0};
         camera.projection = CAMERA_ORTHOGRAPHIC;
         camera.up = Vector3{1, 0, 0};
         camera.fovy = 5;
-        mode = CAMERA_FREE;
+        mode = CAMERA_CUSTOM;
       } else {
+        camera.position = Vector3{5, 5, 5};
+        camera.target = Vector3{0, 0, 0};
         camera.projection = CAMERA_PERSPECTIVE;
         camera.up = Vector3{0, 1, 0};
         camera.fovy = 45;
-        mode = CAMERA_FIRST_PERSON;
+        mode = CAMERA_FREE;
       }
-    }
-
-    if (IsKeyPressed(KEY_SPACE)) {
-      camera.position = Vector3{0, 5, 0};
-      camera.target = Vector3{0, 0, 0};
     }
 
     UpdateCamera(&camera, mode);
@@ -112,9 +116,41 @@ int main() {
     ClearBackground(RAYWHITE);
     BeginMode3D(camera);
     DrawGrid(10, 1);
-    for (auto point : points.points_) {
-      DrawPoint3D(point.Position(), point.PointColor());
+    for (auto it = points.points_.cbegin();
+         std::next(it) != points.points_.end(); ++it) {
+      Point first = *it;
+      Point second = *std::next(it);
+      auto difference = second.tick - first.tick;
+      if (difference != 1) {
+        continue;
+      }
+
+      double hue = first.Hue();
+      Color color = ColorFromHSV(hue, 75, 100);
+
+      Vector3 direction = Vector3Subtract(second.Position(), first.Position());
+      double length = Vector3Length(direction);
+      Vector3 center = Vector3Lerp(first.Position(), second.Position(), 0.5);
+
+      Vector3 up{0, 1, 0};
+      Vector3 axis = Vector3CrossProduct(up, direction);
+      double angle =
+          std::acosf(Vector3DotProduct(Vector3Normalize(direction), up)) *
+          RAD2DEG;
+
+      double thickness = 0.01;
+
+      rlPushMatrix();
+      rlTranslatef(center.x, center.y, center.z);
+      rlRotatef(angle, axis.x, axis.y, axis.z);
+      DrawCylinder((Vector3){0, 0, 0}, thickness, thickness, length, 8, color);
+      rlPopMatrix();
     }
+
+    Vector3 zero{};
+    DrawLine3D(zero, {10, 0, 0}, RED);
+    DrawLine3D(zero, {0, 0, 10}, GREEN);
+
     EndMode3D();
     EndDrawing();
   }
