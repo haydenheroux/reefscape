@@ -25,6 +25,7 @@ using AccelerationUnit = QuantityD<decltype(Meters{} / squared(Seconds{}))>;
 
 using AngleUnit = QuantityD<Radians>;
 using AngularVelocityUnit = QuantityD<decltype(Radians{} / Seconds{})>;
+using AngularAccelerationUnit = QuantityD<decltype(Radians{} / squared(Seconds{}))>;
 using RatioUnit = QuantityD<decltype(Revolutions{} / Revolutions{})>;
 constexpr auto gear_ratio =
     QuantityMaker<decltype(Revolutions{} / Revolutions{})>{};
@@ -36,6 +37,7 @@ using CurrentUnit = QuantityD<Amperes>;
 using ResistanceUnit = QuantityD<Ohms>;
 
 using MassUnit = QuantityD<Kilo<Grams>>;
+using MomentOfInertiaUnit = QuantityD<decltype(Kilo<Grams>{} * squared(Meters{}))>;
 
 using TorqueUnit = QuantityD<decltype(Newtons{} * Meters{})>;
 constexpr auto newton_meters = QuantityMaker<decltype(Newtons{} * Meters{})>{};
@@ -43,11 +45,15 @@ using TorqueConstantUnit =
     QuantityD<decltype(Newtons{} * Meters{} / Amperes{})>;
 using ForceUnit = QuantityD<Newtons>;
 
-using VelocityCoefficientUnit =
+using LinearVelocityCoefficientUnit =
     QuantityD<decltype((Meters{} / squared(Seconds{})) /
                        (Meters{} / Seconds{}))>;
+using AngularVelocityCoefficientUnit = QuantityD<decltype((
+    Revolutions{} / squared(Seconds{}) / (Revolutions{} / Seconds{})))>;
 
-using VoltageCoefficientUnit =
+using LinearVoltageCoefficientUnit =
     QuantityD<decltype((Meters{} / squared(Seconds{})) / (Volts{}))>;
+using AngularVoltageCoefficientUnit =
+    QuantityD<decltype((Revolutions{} / squared(Seconds{})) / (Volts{}))>;
 
 }  // namespace reefscape

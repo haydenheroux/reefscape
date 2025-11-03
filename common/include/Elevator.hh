@@ -6,6 +6,7 @@
 
 namespace reefscape {
 
+// TODO(hayden): Make const
 struct Elevator {
   // NOTE(hayden): Gear ratio is output over input
   RatioUnit gear_ratio;
@@ -24,29 +25,23 @@ struct Elevator {
         max_travel(max_travel),
         motor(motor) {};
 
-  VelocityCoefficientUnit VelocityCoefficient() const;
+  LinearVelocityCoefficientUnit VelocityCoefficient() const;
 
-  VoltageCoefficientUnit VoltageCoefficient() const;
+  LinearVoltageCoefficientUnit VoltageCoefficient() const;
 
   AngularVelocityUnit MotorVelocity(VelocityUnit velocity) const;
 
   AccelerationUnit Acceleration(VelocityUnit velocity,
                                 VoltageUnit voltage) const;
 
-  VelocityUnit MaximumVelocity() const;
-
-  AccelerationUnit MaximumAcceleration() const;
-
   ForceUnit Force(VelocityUnit velocity, VoltageUnit voltage) const;
 
-  CurrentUnit Current(VelocityUnit velocity, VoltageUnit voltage) const;
-
-  VoltageUnit LimitVoltage(VelocityUnit velocity, VoltageUnit voltage) const;
-
+  // TODO(hayden): Move to a different class
   template <class State>
     requires HasDimension<State>
   SystemMatrix<State::Dimension> ContinuousSystemMatrix() const;
 
+  // TODO(hayden): Move to a different class
   template <class State, class Input>
     requires HasDimension<State> && HasDimension<Input>
   InputMatrix<State::Dimension, Input::Dimension> ContinuousInputMatrix() const;

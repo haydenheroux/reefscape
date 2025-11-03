@@ -4,6 +4,7 @@
 #include "AffineSystemSim.hh"
 #include "Elevator.hh"
 #include "Motor.hh"
+#include "MotorSystem.hh"
 #include "au/units/amperes.hh"
 #include "au/units/inches.hh"
 #include "au/units/pounds_mass.hh"
@@ -39,7 +40,7 @@ int main() {
   Eigen::Matrix<double, Input::Dimension, State::Dimension> K;
   K << kP.in(volts / meter), kD.in(volts / (meters / second));
 
-  TrapezoidTrajectory profile{elevator};
+  TrapezoidTrajectory<Elevator, Meters> profile{elevator};
 
   State top{kTotalTravel, (meters / second)(0)};
   State bottom{meters(0), (meters / second)(0)};
@@ -63,7 +64,7 @@ int main() {
 
     Input input{K * error.vector + sim.StabilizingInput().vector};
     VoltageUnit limited_voltage =
-        elevator.LimitVoltage(sim.State().Velocity(), input.Voltage());
+        LimitVoltage(elevator, sim.State().Velocity(), input.Voltage());
     Input limited_input{limited_voltage};
     sim.Update(limited_input);
     sim.SetState(sim.State().PositionClamped(meters(0), elevator.max_travel));

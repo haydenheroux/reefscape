@@ -1,19 +1,18 @@
 #include "Elevator.hh"
 
-#include "au/math.hh"
 #include "input.hh"
 #include "state.hh"
 #include "units.hh"
 
 namespace reefscape {
 
-VelocityCoefficientUnit Elevator::VelocityCoefficient() const {
+LinearVelocityCoefficientUnit Elevator::VelocityCoefficient() const {
   return -1 * (gear_ratio * gear_ratio * motor.torque_constant_ * radians(1)) /
          (motor.resistance_ * drum_radius * drum_radius * mass *
           motor.angular_velocity_constant_);
 }
 
-VoltageCoefficientUnit Elevator::VoltageCoefficient() const {
+LinearVoltageCoefficientUnit Elevator::VoltageCoefficient() const {
   return (gear_ratio * motor.torque_constant_) /
          (motor.resistance_ * mass * drum_radius);
 }
@@ -27,19 +26,6 @@ AccelerationUnit Elevator::Acceleration(VelocityUnit velocity,
   return Force(velocity, voltage) / mass;
 }
 
-VelocityUnit Elevator::MaximumVelocity() const {
-  // Maximize ω with dω/dt = (velocity_coefficient)·ω +
-  // (voltage_coefficient)·(motor.nominal_voltage)
-  return -1 * motor.nominal_voltage_ * VoltageCoefficient() /
-         VelocityCoefficient();
-}
-
-AccelerationUnit Elevator::MaximumAcceleration() const {
-  VelocityUnit velocity = (meters / second)(0);
-  VoltageUnit voltage = LimitVoltage(velocity, volts(12));
-  return Acceleration(velocity, voltage);
-}
-
 ForceUnit Elevator::Force(VelocityUnit velocity, VoltageUnit voltage) const {
   ForceUnit voltage_force = (gear_ratio * motor.torque_constant_ * voltage) /
                             (motor.resistance_ * drum_radius);
@@ -51,25 +37,6 @@ ForceUnit Elevator::Force(VelocityUnit velocity, VoltageUnit voltage) const {
                               motor.angular_velocity_constant_);
 
   return voltage_force + back_emf_force;
-}
-
-CurrentUnit Elevator::Current(VelocityUnit velocity,
-                              VoltageUnit voltage) const {
-  return voltage / motor.resistance_ -
-         MotorVelocity(velocity) /
-             (motor.angular_velocity_constant_ * motor.resistance_);
-}
-
-VoltageUnit Elevator::LimitVoltage(VelocityUnit velocity,
-                                   VoltageUnit voltage) const {
-  voltage = au::clamp(voltage, -motor.nominal_voltage_, motor.nominal_voltage_);
-
-  CurrentUnit current = Current(velocity, voltage);
-  if (current > max_current) {
-    voltage = max_current * motor.resistance_ +
-              MotorVelocity(velocity) / motor.angular_velocity_constant_;
-  }
-  return voltage;
 }
 
 template <>

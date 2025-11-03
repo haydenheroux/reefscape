@@ -1,7 +1,6 @@
 project(common)
 
-#TODO(hayden) : Glob did not find trajectory.cc when created
-file(GLOB common_src src/Elevator.cc src/trajectory.cc src/pubsub.cc)
+file(GLOB common_src src/Arm.cc src/Elevator.cc src/pubsub.cc)
 
 add_library(common ${common_src})
 
