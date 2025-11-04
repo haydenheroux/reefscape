@@ -9,15 +9,15 @@ namespace reefscape {
 template <typename System, typename NativeUnit>
   requires MotorSystem<System, NativeUnit>
 struct TrapezoidTrajectory {
-  QuantityD<decltype(NativeUnit{} / Seconds{})> max_velocity;
-  QuantityD<decltype(NativeUnit{} / squared(Seconds{}))> max_acceleration;
+  au::QuantityD<units::Velocity<NativeUnit>> max_velocity;
+  au::QuantityD<units::Acceleration<NativeUnit>> max_acceleration;
 
   TrapezoidTrajectory(const System &system)
       : max_velocity(MaximumVelocity<System, NativeUnit>(system)),
         max_acceleration(MaximumAcceleration<System, NativeUnit>(system)) {}
 
   // TODO(hayden): Generate trajectories in NativeUnit
-  PositionVelocityState Calculate(TimeUnit time_step,
+  PositionVelocityState Calculate(quantities::Time time_step,
                                   PositionVelocityState state,
                                   PositionVelocityState goal) {
     // NOTE(hayden): Algorithm assumes positive motion
@@ -31,26 +31,24 @@ struct TrapezoidTrajectory {
       state.SetVelocity(max_velocity);
     }
 
-    TimeUnit start_time = state.Velocity() / max_acceleration;
-    DisplacementUnit start_distance =
-        0.5 * start_time * start_time * max_acceleration;
+    auto start_time = state.Velocity() / max_acceleration;
+    auto start_distance = 0.5 * start_time * start_time * max_acceleration;
 
-    TimeUnit end_time = goal.Velocity() / max_acceleration;
-    DisplacementUnit end_distance =
-        0.5 * end_time * end_time * max_acceleration;
+    auto end_time = goal.Velocity() / max_acceleration;
+    auto end_distance = 0.5 * end_time * end_time * max_acceleration;
 
-    DisplacementUnit distance =
+    auto distance =
         start_distance + (goal.Position() - state.Position()) + end_distance;
-    TimeUnit acceleration_time = max_velocity / max_acceleration;
-    DisplacementUnit cruise_distance =
+    auto acceleration_time = max_velocity / max_acceleration;
+    auto cruise_distance =
         distance - (acceleration_time * acceleration_time * max_acceleration);
-    if (cruise_distance < meters(0)) {
+    if (cruise_distance < au::meters(0)) {
       acceleration_time = au::sqrt(distance / max_acceleration);
-      cruise_distance = meters(0);
+      cruise_distance = au::meters(0);
     }
-    TimeUnit end_acceleration = acceleration_time - start_time;
-    TimeUnit end_cruise = end_acceleration + cruise_distance / max_velocity;
-    TimeUnit end_deceleration = end_cruise + acceleration_time - end_time;
+    auto end_acceleration = acceleration_time - start_time;
+    auto end_cruise = end_acceleration + cruise_distance / max_velocity;
+    auto end_deceleration = end_cruise + acceleration_time - end_time;
 
     PositionVelocityState result{state};
 
@@ -67,7 +65,7 @@ struct TrapezoidTrajectory {
           max_velocity * (time_step - end_acceleration));
       result.SetVelocity(max_velocity);
     } else if (time_step <= end_deceleration) {
-      TimeUnit time_left = end_deceleration - time_step;
+      auto time_left = end_deceleration - time_step;
       result.SetPosition(
           goal.Position() -
           time_left * (goal.Velocity() + 0.5 * time_left * max_acceleration));

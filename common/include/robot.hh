@@ -8,53 +8,55 @@
 
 namespace reefscape {
 
-const DisplacementUnit kTubeWidth = inches(1);
-const DisplacementUnit kTubeHeight = inches(2);
-const DisplacementUnit kThinTubeWidth = inches(1);
-const DisplacementUnit kThinTubeHeight = inches(1);
+using namespace quantities;
 
-const DisplacementUnit kManipulatorThickness = inches(0.236);
+const Displacement kTubeWidth = au::inches(1);
+const Displacement kTubeHeight = au::inches(2);
+const Displacement kThinTubeWidth = au::inches(1);
+const Displacement kThinTubeHeight = au::inches(1);
 
-const DisplacementUnit kBaseToFloor = inches(1.77);
-const DisplacementUnit kBaseSize = inches(26.0);
-const DisplacementUnit kBaseThickness = inches(0.244);
+const Displacement kManipulatorThickness = au::inches(0.236);
 
-const DisplacementUnit kFrameToBase = kBaseThickness;
-const DisplacementUnit kFrameTubeLength = inches(26);
-const DisplacementUnit kFrameTubeDistance = inches(12);
+const Displacement kBaseToFloor = au::inches(1.77);
+const Displacement kBaseSize = au::inches(26.0);
+const Displacement kBaseThickness = au::inches(0.244);
 
-const DisplacementUnit kStageOneToFrame = kTubeHeight;
-const DisplacementUnit kStageOneInnerWidth = inches(24.0);
-const DisplacementUnit kStageOneHeight = inches(25.0);
-const DisplacementUnit kStageOneStandoffLength = inches(2);
-const DisplacementUnit kStageOneStandoffRadius = inches(0.1875);
+const Displacement kFrameToBase = kBaseThickness;
+const Displacement kFrameTubeLength = au::inches(26);
+const Displacement kFrameTubeDistance = au::inches(12);
 
-const DisplacementUnit kStageTwoToStageOneAtBottom = kTubeWidth;
-const DisplacementUnit kStageTwoToStageOneAtTop = inches(23);
-const DisplacementUnit kStageTwoTravel =
+const Displacement kStageOneToFrame = kTubeHeight;
+const Displacement kStageOneInnerWidth = au::inches(24.0);
+const Displacement kStageOneHeight = au::inches(25.0);
+const Displacement kStageOneStandoffLength = au::inches(2);
+const Displacement kStageOneStandoffRadius = au::inches(0.1875);
+
+const Displacement kStageTwoToStageOneAtBottom = kTubeWidth;
+const Displacement kStageTwoToStageOneAtTop = au::inches(23);
+const Displacement kStageTwoTravel =
     au::abs(kStageTwoToStageOneAtTop - kStageTwoToStageOneAtBottom);
 
-const DisplacementUnit kStageTwoInnerWidth = inches(21.0);
-const DisplacementUnit kStageTwoHeight = inches(27.0);
-const DisplacementUnit kStageTwoThinTubeLength = inches(4.0);
+const Displacement kStageTwoInnerWidth = au::inches(21.0);
+const Displacement kStageTwoHeight = au::inches(27.0);
+const Displacement kStageTwoThinTubeLength = au::inches(4.0);
 
-const DisplacementUnit kStageThreeToStageTwoAtBottom = kTubeWidth;
-const DisplacementUnit kStageThreeToStageTwoAtTop = inches(23);
-const DisplacementUnit kStageThreeTravel =
+const Displacement kStageThreeToStageTwoAtBottom = kTubeWidth;
+const Displacement kStageThreeToStageTwoAtTop = au::inches(23);
+const Displacement kStageThreeTravel =
     au::abs(kStageThreeToStageTwoAtTop - kStageThreeToStageTwoAtBottom);
 
-const DisplacementUnit kStageThreeInnerWidth = inches(18.0);
-const DisplacementUnit kStageThreeHeight = inches(30.5);
+const Displacement kStageThreeInnerWidth = au::inches(18.0);
+const Displacement kStageThreeHeight = au::inches(30.5);
 
-const DisplacementUnit kCarriageToStageThreeAtBottom = kTubeWidth;
-const DisplacementUnit kCarriageToStageThreeAtTop = inches(23);
-const DisplacementUnit kCarriageTravel =
+const Displacement kCarriageToStageThreeAtBottom = kTubeWidth;
+const Displacement kCarriageToStageThreeAtTop = au::inches(23);
+const Displacement kCarriageTravel =
     au::abs(kCarriageToStageThreeAtTop - kCarriageToStageThreeAtBottom);
 
-const DisplacementUnit kCarriageInnerWidth = inches(15.0);
-const DisplacementUnit kCarriageHeight = inches(6.0);
+const Displacement kCarriageInnerWidth = au::inches(15.0);
+const Displacement kCarriageHeight = au::inches(6.0);
 
-const DisplacementUnit kTotalTravel =
+const Displacement kTotalTravel =
     kStageTwoTravel + kStageThreeTravel + kCarriageTravel;
 
 const std::string_view kElevatorPositionKey = "/elevator/position";

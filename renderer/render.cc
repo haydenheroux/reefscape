@@ -22,7 +22,7 @@ void Init(const Window &window) {
 }
 
 Camera InitCamera(const UnitVector3 &position, const UnitVector3 &target,
-                  AngleUnit fov) {
+                  Angle fov) {
   Camera camera;
   camera.position.x = position.x.in(raylib_unit);
   camera.position.y = position.y.in(raylib_unit);
@@ -31,25 +31,24 @@ Camera InitCamera(const UnitVector3 &position, const UnitVector3 &target,
   camera.target.y = target.y.in(raylib_unit);
   camera.target.z = target.z.in(raylib_unit);
   camera.up = {0, 1, 0};
-  camera.fovy = fov.in(degrees);
+  camera.fovy = fov.in(au::degrees);
   camera.projection = CAMERA_PERSPECTIVE;
   return camera;
 }
 
-void DrawStandoff(Vector3 start, DisplacementUnit length,
-                  DisplacementUnit radius) {
+void DrawStandoff(Vector3 start, Displacement length, Displacement radius) {
   Vector3 end = start;
   end.z -= length.in(raylib_unit);
   DrawCylinderEx(start, end, radius.in(raylib_unit), radius.in(raylib_unit), 16,
                  BLACK);
 }
 
-void DrawStandoffs(Vector3 origin, DisplacementUnit length,
-                   DisplacementUnit radius, DisplacementUnit inner_width) {
-  origin.y -= inches(0.5).in(raylib_unit);
+void DrawStandoffs(Vector3 origin, Displacement length, Displacement radius,
+                   Displacement inner_width) {
+  origin.y -= au::inches(0.5).in(raylib_unit);
   origin.z -= (kTubeHeight / 2).in(raylib_units);
 
-  DisplacementUnit half_offset = (inner_width / 2);
+  Displacement half_offset = (inner_width / 2);
 
   Vector3 left = origin;
   left.x -= half_offset.in(raylib_unit);
@@ -60,18 +59,18 @@ void DrawStandoffs(Vector3 origin, DisplacementUnit length,
   DrawStandoff(left, length, radius);
   DrawStandoff(right, length, radius);
 
-  left.y -= inches(1.0).in(raylib_unit);
-  right.y -= inches(1.0).in(raylib_unit);
+  left.y -= au::inches(1.0).in(raylib_unit);
+  right.y -= au::inches(1.0).in(raylib_unit);
 
   DrawStandoff(left, length, radius);
   DrawStandoff(right, length, radius);
 }
 
-void DrawVerticalTubes(Vector3 origin, DisplacementUnit length,
-                       DisplacementUnit inner_width) {
+void DrawVerticalTubes(Vector3 origin, Displacement length,
+                       Displacement inner_width) {
   origin.y += (length / 2).in(raylib_unit);
 
-  DisplacementUnit half_offset = (inner_width / 2 + kTubeWidth / 2);
+  Displacement half_offset = (inner_width / 2 + kTubeWidth / 2);
 
   Vector3 left = origin;
   left.x -= half_offset.in(raylib_unit);
@@ -89,7 +88,7 @@ void DrawVerticalTubes(Vector3 origin, DisplacementUnit length,
                 kTubeHeight.in(raylib_unit), BLACK);
 }
 
-void DrawHorizontalTubeUpZ(Vector3 origin, DisplacementUnit length) {
+void DrawHorizontalTubeUpZ(Vector3 origin, Displacement length) {
   origin.y += (kTubeHeight / 2).in(raylib_units);
   origin.z += (kTubeWidth / 2).in(raylib_units);
   DrawCube(origin, length.in(raylib_unit), kTubeHeight.in(raylib_unit),
@@ -98,7 +97,7 @@ void DrawHorizontalTubeUpZ(Vector3 origin, DisplacementUnit length) {
                 kTubeWidth.in(raylib_unit), BLACK);
 }
 
-void DrawHorizontalTubeUpX(Vector3 origin, DisplacementUnit length) {
+void DrawHorizontalTubeUpX(Vector3 origin, Displacement length) {
   origin.y += (kTubeHeight / 2).in(raylib_units);
   origin.x += (kTubeWidth / 2).in(raylib_units);
   DrawCube(origin, kTubeWidth.in(raylib_units), kTubeHeight.in(raylib_units),
@@ -107,7 +106,7 @@ void DrawHorizontalTubeUpX(Vector3 origin, DisplacementUnit length) {
                 kTubeHeight.in(raylib_units), length.in(raylib_units), BLACK);
 }
 
-void DrawHorizontalTubeFlat(Vector3 origin, DisplacementUnit length) {
+void DrawHorizontalTubeFlat(Vector3 origin, Displacement length) {
   origin.y += (kTubeWidth / 2).in(raylib_units);
   DrawCube(origin, length.in(raylib_units), kTubeWidth.in(raylib_units),
            kTubeHeight.in(raylib_units), k5112Green);
@@ -115,12 +114,12 @@ void DrawHorizontalTubeFlat(Vector3 origin, DisplacementUnit length) {
                 kTubeHeight.in(raylib_units), BLACK);
 }
 
-void DrawThinTubesBack(Vector3 origin, DisplacementUnit thin_tube_length,
-                       DisplacementUnit inner_width) {
+void DrawThinTubesBack(Vector3 origin, Displacement thin_tube_length,
+                       Displacement inner_width) {
   origin.y += (kThinTubeWidth / 2).in(raylib_units);
   origin.z -= (thin_tube_length / 2 - kTubeHeight / 2).in(raylib_units);
 
-  DisplacementUnit half_offset = (inner_width / 2 + kThinTubeWidth / 2);
+  auto half_offset = (inner_width / 2 + kThinTubeWidth / 2);
 
   Vector3 left = origin;
   left.x -= half_offset.in(raylib_unit);
@@ -142,7 +141,7 @@ void DrawThinTubesBack(Vector3 origin, DisplacementUnit thin_tube_length,
                 thin_tube_length.in(raylib_units), BLACK);
 }
 
-void DrawThinTubeAcross(Vector3 origin, DisplacementUnit length) {
+void DrawThinTubeAcross(Vector3 origin, Displacement length) {
   origin.y += (kThinTubeWidth / 2).in(raylib_units);
   origin.z += (kThinTubeHeight / 2).in(raylib_units);
 
@@ -215,7 +214,7 @@ void DrawFrameTubes(Vector3 origin) {
   DrawHorizontalTubeUpX(frame_origin, kFrameTubeLength - 2 * kTubeWidth);
 }
 
-void DrawRobot(DisplacementUnit elevator_position) {
+void DrawRobot(Displacement elevator_position) {
   Vector3 origin = {0, 0, 0};
 
   Vector3 base_origin = origin;
@@ -251,7 +250,7 @@ void DrawRobot(DisplacementUnit elevator_position) {
   DrawCarriage(carriage_origin);
 }
 
-void Render(const Camera &camera, DisplacementUnit elevator_position) {
+void Render(const Camera &camera, Displacement elevator_position) {
   BeginDrawing();
   ClearBackground(WHITE);
   BeginMode3D(camera);
@@ -261,8 +260,8 @@ void Render(const Camera &camera, DisplacementUnit elevator_position) {
   EndDrawing();
 }
 
-Vector3 SpinZ(const Vector3 &position, AngleUnit angle) {
-  return Vector3RotateByAxisAngle(position, {0, 1, 0}, angle.in(radians));
+Vector3 SpinZ(const Vector3 &position, Angle angle) {
+  return Vector3RotateByAxisAngle(position, {0, 1, 0}, angle.in(au::radians));
 }
 
 void TextWriter::Write(const std::string &text) {

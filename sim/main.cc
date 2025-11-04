@@ -20,40 +20,47 @@ using State = PositionVelocityState;
 using Input = VoltageInput;
 
 int main() {
-  Elevator elevator{gear_ratio(5),   0.5 * inches(1.273),
-                    pounds_mass(30), amperes(120),
-                    kTotalTravel,    Motor::KrakenX60FOC() * 2};
+  // TODO(hayden): Move quantity makers to separate namespace?
+  Elevator elevator{units::gear_ratio(5), 0.5 * au::inches(1.273),
+                    au::pounds_mass(30),  au::amperes(120),
+                    kTotalTravel,         Motor::KrakenX60FOC() * 2};
 
   auto server = nt::CreateInstance();
   nt::StartServer(server, "", "127.0.0.1", 0, 5810);
   Publisher publisher{server};
 
-  TimeUnit time_step = (milli(seconds))(1);
-  auto wait_time = std::chrono::microseconds(time_step.in<int>(micro(seconds)));
-  AccelerationUnit gravity = (meters / squared(second))(-9.81);
+  Time time_step = (au::milli(au::seconds))(1);
+  auto wait_time =
+      std::chrono::microseconds(time_step.in<int>(au::micro(au::seconds)));
+  // TODO(hayden): Make this a universal constant
+  LinearAcceleration gravity = (au::meters / squared(au::second))(-9.81);
 
   AffineSystemSim<State, Input> sim{elevator, gravity, time_step};
 
   // TODO(hayden): Implement LQR to find the optimal K
-  auto kP = (volts / meter)(191.2215);
-  auto kD = (volts / (meters / second))(4.811);
+  auto kP = (au::volts / au::meter)(191.2215);
+  auto kD = (au::volts / (au::meters / au::second))(4.811);
   Eigen::Matrix<double, Input::Dimension, State::Dimension> K;
-  K << kP.in(volts / meter), kD.in(volts / (meters / second));
+  K << kP.in(au::volts / au::meter),
+      kD.in(au::volts / (au::meters / au::second));
 
-  TrapezoidTrajectory<Elevator, Meters> profile{elevator};
+  // TODO(hayden): Determine if it is possible to avoid explicit declaration
+  TrapezoidTrajectory<Elevator, units::DisplacementUnit> profile{elevator};
 
-  State top{kTotalTravel, (meters / second)(0)};
-  State bottom{meters(0), (meters / second)(0)};
+  // TODO(hayden): State constructors with only position, no velocity
+  State top{kTotalTravel, (au::meters / au::second)(0)};
+  // TODO(hayden): Zero state constructor
+  State bottom{au::meters(0), (au::meters / au::second)(0)};
 
   State reference = bottom;
   State goal = top;
 
-  TimeUnit total_sim_time = seconds(0);
+  Time total_sim_time = au::seconds(0);
 
   while (true) {
-    // TODO(hayden): Make this event-based
-    TimeUnit cycle_time = au::fmod(total_sim_time, seconds(6));
-    if (cycle_time < seconds(3)) {
+    // TODO(hayden): Determine goal based on events
+    auto cycle_time = au::fmod(total_sim_time, au::seconds(6));
+    if (cycle_time < au::seconds(3)) {
       goal = top;
     } else {
       goal = bottom;
@@ -63,11 +70,12 @@ int main() {
     State error{reference.vector - sim.State().vector};
 
     Input input{K * error.vector + sim.StabilizingInput().vector};
-    VoltageUnit limited_voltage =
+    auto limited_voltage =
         LimitVoltage(elevator, sim.State().Velocity(), input.Voltage());
     Input limited_input{limited_voltage};
     sim.Update(limited_input);
-    sim.SetState(sim.State().PositionClamped(meters(0), elevator.max_travel));
+    sim.SetState(
+        sim.State().PositionClamped(au::meters(0), elevator.max_travel));
 
     State new_state = sim.State();
     bool at_goal = new_state.At(goal);

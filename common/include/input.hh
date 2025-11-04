@@ -8,7 +8,7 @@ struct VoltageInput {
   static const int Dimension = 1;
   InputVector<Dimension> vector;
 
-  VoltageInput(VoltageUnit voltage) { SetVoltage(voltage); }
+  VoltageInput(quantities::Voltage voltage) { SetVoltage(voltage); }
   VoltageInput(const InputVector<Dimension> &input) {
     this->vector[0] = input[0];
   }
@@ -17,8 +17,10 @@ struct VoltageInput {
     return *this;
   }
 
-  VoltageUnit Voltage() const { return volts(vector[0]); }
-  void SetVoltage(VoltageUnit voltage) { vector[0] = voltage.in(volts); }
+  quantities::Voltage Voltage() const { return au::volts(vector[0]); }
+  void SetVoltage(quantities::Voltage voltage) {
+    vector[0] = voltage.in(au::volts);
+  }
 };
 
 };  // namespace reefscape

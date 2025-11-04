@@ -4,7 +4,6 @@
 #include "raylib.h"
 #include "render.hh"
 #include "render_units.hh"
-#include "units.hh"
 
 using namespace reefscape;
 
@@ -15,28 +14,29 @@ int main() {
 
   Subscriber subscriber{client};
 
-  Init({pixels(360), pixels(640), "Reefscape Elevator Simulator", 60});
+  Init({pixels(360.0), pixels(640.0), "Reefscape Elevator Simulator", 60});
 
-  AngularVelocityUnit camera_omega = (degrees / second)(12);
+  auto camera_omega = (au::degrees / au::second)(12.0);
 
-  Camera camera = InitCamera({meters(3), inches(70.0), meters(0)},
-                             {meters(0), inches(36.0), meters(0)}, degrees(45));
+  Camera camera = InitCamera(
+      {au::meters(3.0), au::inches(70.0), au::meters(0.0)},
+      {au::meters(0.0), au::inches(36.0), au::meters(0.0)}, au::degrees(45.0));
 
   TextWriter writer;
 
   while (!WindowShouldClose()) {
-    TimeUnit elapsed_time = seconds(GetFrameTime());
+    auto elapsed_time = au::seconds(GetFrameTime());
     camera.position = SpinZ(camera.position, camera_omega * elapsed_time);
 
-    DisplacementUnit position = subscriber.Position();
-    VelocityUnit velocity = subscriber.Velocity();
-    VoltageUnit voltage = subscriber.Voltage();
+    auto position = subscriber.Position();
+    auto velocity = subscriber.Velocity();
+    auto voltage = subscriber.Voltage();
 
     Render(camera, position);
     writer.Reset();
-    writer.Write(std::to_string(position.in(meters)) + "m");
-    writer.Write(std::to_string(velocity.in(meters / second)) + "m/s");
-    writer.Write(std::to_string(voltage.in(volts)) + "V");
+    writer.Write(std::to_string(position.in(au::meters)) + "m");
+    writer.Write(std::to_string(velocity.in(au::meters / au::second)) + "m/s");
+    writer.Write(std::to_string(voltage.in(au::volts)) + "V");
   }
 
   CloseWindow();

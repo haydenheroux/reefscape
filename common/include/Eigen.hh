@@ -36,7 +36,7 @@ using Matrices = std::pair<SystemMatrix<States>, InputMatrix<States, Inputs>>;
 
 template <int States, int Inputs>
 Matrices<States, Inputs> Discretize(Matrices<States, Inputs> &AcBc,
-                                    TimeUnit sample_period) {
+                                    quantities::Time sample_period) {
   using BlockMatrix = Eigen::Matrix<double, States + Inputs, States + Inputs>;
 
   // M = ⎡ Ac Bc ⎤
@@ -48,7 +48,7 @@ Matrices<States, Inputs> Discretize(Matrices<States, Inputs> &AcBc,
 
   // ϕ = ⎡ Ad Bd ⎤
   //     ⎣ 0  I  ⎦
-  BlockMatrix phi = (M * sample_period.in(seconds)).exp();
+  BlockMatrix phi = (M * sample_period.in(au::seconds)).exp();
   SystemMatrix<States> Ad = phi.template block<States, States>(0, 0);
   InputMatrix<States, Inputs> Bd =
       phi.template block<States, Inputs>(0, States);

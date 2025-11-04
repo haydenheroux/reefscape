@@ -6,17 +6,19 @@
 
 namespace reefscape {
 
+using namespace quantities;
+
 struct PositionVelocityState {
   static const int Dimension = 2;
   StateVector<Dimension> vector;
 
-  PositionVelocityState(DisplacementUnit position, VelocityUnit velocity) {
+  PositionVelocityState(Displacement position, LinearVelocity velocity) {
     SetPosition(position);
     SetVelocity(velocity);
   }
   PositionVelocityState(const StateVector<Dimension> &state) {
-    SetPosition(meters(state[0]));
-    SetVelocity((meters / second)(state[1]));
+    SetPosition(au::meters(state[0]));
+    SetVelocity((au::meters / au::second)(state[1]));
   }
   PositionVelocityState &operator=(const StateVector<Dimension> &state) {
     this->vector[0] = state[0];
@@ -24,18 +26,20 @@ struct PositionVelocityState {
     return *this;
   }
 
-  DisplacementUnit Position() const { return meters(vector[0]); }
-  VelocityUnit Velocity() const { return (meters / second)(vector[1]); }
-  void SetPosition(DisplacementUnit position) {
-    vector[0] = position.in(meters);
+  Displacement Position() const { return au::meters(vector[0]); }
+  LinearVelocity Velocity() const {
+    return (au::meters / au::second)(vector[1]);
   }
-  void SetVelocity(VelocityUnit velocity) {
-    vector[1] = velocity.in(meters / second);
+  void SetPosition(Displacement position) {
+    vector[0] = position.in(au::meters);
+  }
+  void SetVelocity(LinearVelocity velocity) {
+    vector[1] = velocity.in(au::meters / au::second);
   }
 
-  PositionVelocityState PositionClamped(DisplacementUnit min,
-                                        DisplacementUnit max) const {
-    DisplacementUnit position = Position();
+  PositionVelocityState PositionClamped(Displacement min,
+                                        Displacement max) const {
+    auto position = Position();
 
     if (position > max) {
       return {max, Velocity()};
@@ -48,9 +52,9 @@ struct PositionVelocityState {
 
   bool At(PositionVelocityState other) const {
     bool position_in_tolerance =
-        au::abs(Position() - other.Position()) < (centi(meters))(1);
-    bool velocity_in_tolerance =
-        au::abs(Velocity() - other.Velocity()) < (centi(meters) / second)(1);
+        au::abs(Position() - other.Position()) < (au::centi(au::meters))(1);
+    bool velocity_in_tolerance = au::abs(Velocity() - other.Velocity()) <
+                                 (au::centi(au::meters) / au::second)(1);
     return position_in_tolerance && velocity_in_tolerance;
   }
 };

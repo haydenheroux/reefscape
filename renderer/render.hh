@@ -5,9 +5,11 @@
 
 namespace reefscape {
 
+using namespace quantities;
+
 struct Window {
-  DisplacementUnit width;
-  DisplacementUnit height;
+  Displacement width;
+  Displacement height;
   std::string title;
   int fps;
 };
@@ -15,17 +17,17 @@ struct Window {
 void Init(const Window &window);
 
 struct UnitVector3 {
-  DisplacementUnit x;
-  DisplacementUnit y;
-  DisplacementUnit z;
+  Displacement x;
+  Displacement y;
+  Displacement z;
 };
 
 Camera InitCamera(const UnitVector3 &position, const UnitVector3 &target,
-                  AngleUnit fov);
+                  Angle fov);
 
-void Render(const Camera &camera, DisplacementUnit elevator_position);
+void Render(const Camera &camera, Displacement elevator_position);
 
-Vector3 SpinZ(const Vector3 &position, AngleUnit angle);
+Vector3 SpinZ(const Vector3 &position, Angle angle);
 
 struct TextWriter {
   unsigned int line_number = 0;

@@ -9,21 +9,21 @@
 
 using namespace reefscape;
 
-const int buffer_size = 2000; 
+const int buffer_size = 2000;
 
 struct Point {
   int tick;
-  DisplacementUnit position;
-  VelocityUnit velocity;
-  VoltageUnit voltage;
+  Displacement position;
+  LinearVelocity velocity;
+  Voltage voltage;
 
   Vector3 Position() const;
   double Hue() const;
 };
 
 Vector3 Point::Position() const {
-  float position_ = position.in(meters);
-  float velocity_ = velocity.in(meters / second);
+  float position_ = position.in(au::meters);
+  float velocity_ = velocity.in(au::meters / au::second);
   float time = tick / (2.0 * buffer_size);
   return Vector3{velocity_, time, position_};
 }
@@ -34,10 +34,12 @@ double map(double in, double in_min, double in_max, double out_min,
 }
 
 double Point::Hue() const {
-  if (voltage < volts(0)) {
-    return map(clamp(voltage, volts(-12), volts(0)).in(volts), -12, 0, 180, 210);
+  if (voltage < au::volts(0)) {
+    return map(clamp(voltage, au::volts(-12), au::volts(0)).in(au::volts), -12,
+               0, 180, 210);
   } else {
-    return map(clamp(voltage, volts(0), volts(12)).in(volts), 0, 12, 0, 30);
+    return map(clamp(voltage, au::volts(0), au::volts(12)).in(au::volts), 0, 12,
+               0, 30);
   }
 }
 
@@ -85,9 +87,9 @@ int main() {
   CameraMode mode = CAMERA_FIRST_PERSON;
 
   while (!WindowShouldClose()) {
-    DisplacementUnit position = subscriber.Position();
-    VelocityUnit velocity = subscriber.Velocity();
-    VoltageUnit voltage = subscriber.Voltage();
+    auto position = subscriber.Position();
+    auto velocity = subscriber.Velocity();
+    auto voltage = subscriber.Voltage();
     int tick_ = tick++ % points.max_points_;
     Point point{tick_, position, velocity, voltage};
     points.push(point);

@@ -5,58 +5,35 @@
 #include "Motor.hh"
 #include "au/fwd.hh"
 #include "au/math.hh"
-#include "au/unit_of_measure.hh"
 #include "units.hh"
 
 namespace reefscape {
 
-template <typename T>
-concept HasMotor = requires(const T& obj) {
-  { obj.motor } -> std::convertible_to<Motor>;
-};
-
-template <typename T>
-concept HasMaxCurrent = requires(const T& obj) {
-  { obj.max_current } -> std::convertible_to<CurrentUnit>;
-};
-
-template <typename T, typename U>
-concept HasMotorVelocity =
-    requires(const T& obj, QuantityD<decltype(U{} / Seconds{})> v) {
-      { obj.MotorVelocity(v) } -> std::same_as<AngularVelocityUnit>;
-    };
-
-template <typename T, typename U>
-concept HasAcceleration = requires(
-    const T& obj, QuantityD<decltype(U{} / Seconds{})> v, VoltageUnit u) {
-  { obj.Acceleration(v, u) } -> std::same_as<AccelerationUnit>;
-};
-
-template <typename T, typename U>
-concept HasVelocityCoefficient = requires(const T& obj) {
+template <typename S, typename U>
+concept MotorSystem = requires(const S& system,
+                               au::QuantityD<units::Velocity<U>> v,
+                               quantities::Voltage u) {
+  // NOTE(hayden): std::convertible_to is used here to ignore constness
+  { system.motor } -> std::convertible_to<Motor>;
+  { system.max_current } -> std::convertible_to<quantities::Current>;
+  // TODO(hayden): Express this requirement in terms of au:: instead of units::
+  { system.MotorVelocity(v) } -> std::same_as<quantities::AngularVelocity>;
   {
-    obj.VelocityCoefficient()
-  } -> std::same_as<
-      QuantityD<decltype(((U{} / Seconds{}) / Seconds{}) / (U{} / Seconds{}))>>;
-};
-
-template <typename T, typename U>
-concept HasVoltageCoefficient = requires(const T& obj) {
+    system.Acceleration(v, u)
+  } -> std::same_as<au::QuantityD<units::Acceleration<U>>>;
   {
-    obj.VoltageCoefficient()
+    system.VelocityCoefficient()
   } -> std::same_as<
-      QuantityD<decltype(((U{} / Seconds{}) / Seconds{}) / Volts{})>>;
+      au::QuantityD<decltype(units::Acceleration<U>{} / units::Velocity<U>{})>>;
+  {
+    system.VoltageCoefficient()
+  } -> std::same_as<
+      au::QuantityD<decltype(units::Acceleration<U>{} / units::VoltageUnit{})>>;
 };
-
-template <typename T, typename U>
-concept MotorSystem =
-    HasMotor<T> && HasMaxCurrent<T> && HasMotorVelocity<T, U> &&
-    HasAcceleration<T, U> && HasVelocityCoefficient<T, U> &&
-    HasVoltageCoefficient<T, U>;
 
 template <typename System, typename NativeUnit>
   requires MotorSystem<System, NativeUnit>
-QuantityD<decltype(NativeUnit{} / Seconds{})> MaximumVelocity(
+au::QuantityD<decltype(NativeUnit{} / units::TimeUnit{})> MaximumVelocity(
     const System& system) {
   // Maximize ω with dω/dt = (velocity_coefficient)·ω +
   // (voltage_coefficient)·(motor.nominal_voltage)
@@ -66,20 +43,21 @@ QuantityD<decltype(NativeUnit{} / Seconds{})> MaximumVelocity(
 
 template <typename System, typename NativeUnit>
   requires MotorSystem<System, NativeUnit>
-QuantityD<decltype(NativeUnit{} / squared(Seconds{}))> MaximumAcceleration(
+au::QuantityD<units::Acceleration<NativeUnit>> MaximumAcceleration(
     const System& system) {
   // NOTE(hayden): Maximum motor torque (therefore maximum acceleration) occurs
   // when the motor is stationary.
-  auto zero_velocity = QuantityMaker<decltype(NativeUnit{} / Seconds{})>{}(0.0);
-  VoltageUnit limited_voltage =
+  auto zero_velocity = au::QuantityMaker<units::Velocity<NativeUnit>>{}(0.0);
+  auto limited_voltage =
       LimitVoltage(system, zero_velocity, system.motor.nominal_voltage_);
   return system.Acceleration(zero_velocity, limited_voltage);
 }
 
 template <typename System, typename VelocityUnit>
-  requires MotorSystem<System, decltype(VelocityUnit{} * Seconds{})>
-CurrentUnit Current(const System& system, QuantityD<VelocityUnit> velocity,
-                    VoltageUnit voltage) {
+  requires MotorSystem<System, decltype(VelocityUnit{} * units::TimeUnit{})>
+quantities::Current Current(const System& system,
+                            au::QuantityD<VelocityUnit> velocity,
+                            quantities::Voltage voltage) {
   return voltage / system.motor.resistance_ -
          system.MotorVelocity(velocity) /
              (system.motor.angular_velocity_constant_ *
@@ -87,13 +65,14 @@ CurrentUnit Current(const System& system, QuantityD<VelocityUnit> velocity,
 }
 
 template <typename System, typename VelocityUnit>
-  requires MotorSystem<System, decltype(VelocityUnit{} * Seconds{})>
-VoltageUnit LimitVoltage(const System& system, QuantityD<VelocityUnit> velocity,
-                         VoltageUnit voltage) {
+  requires MotorSystem<System, decltype(VelocityUnit{} * units::TimeUnit{})>
+quantities::Voltage LimitVoltage(const System& system,
+                                 au::QuantityD<VelocityUnit> velocity,
+                                 quantities::Voltage voltage) {
   voltage = au::clamp(voltage, -system.motor.nominal_voltage_,
                       system.motor.nominal_voltage_);
 
-  CurrentUnit current = Current(system, velocity, voltage);
+  auto current = reefscape::Current(system, velocity, voltage);
   if (current > system.max_current) {
     voltage = system.max_current * system.motor.resistance_ +
               system.MotorVelocity(velocity) /

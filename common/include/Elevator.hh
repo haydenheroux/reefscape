@@ -9,15 +9,16 @@ namespace reefscape {
 // TODO(hayden): Make const
 struct Elevator {
   // NOTE(hayden): Gear ratio is output over input
-  RatioUnit gear_ratio;
-  DisplacementUnit drum_radius;
-  MassUnit mass;
-  CurrentUnit max_current;
-  DisplacementUnit max_travel;
+  GearRatio gear_ratio;
+  // TODO(hayden): Make a conversion factor from angular to linear
+  Displacement drum_radius;
+  Mass mass;
+  Current max_current;
+  Displacement max_travel;
   Motor motor;
 
-  Elevator(RatioUnit gear_ratio, DisplacementUnit drum_radius, MassUnit mass,
-           CurrentUnit max_current, DisplacementUnit max_travel, Motor motor)
+  Elevator(GearRatio gear_ratio, Displacement drum_radius, Mass mass,
+           Current max_current, Displacement max_travel, Motor motor)
       : gear_ratio(gear_ratio),
         drum_radius(drum_radius),
         mass(mass),
@@ -25,16 +26,16 @@ struct Elevator {
         max_travel(max_travel),
         motor(motor) {};
 
-  LinearVelocityCoefficientUnit VelocityCoefficient() const;
+  LinearVelocityCoefficient VelocityCoefficient() const;
 
-  LinearVoltageCoefficientUnit VoltageCoefficient() const;
+  LinearVoltageCoefficient VoltageCoefficient() const;
 
-  AngularVelocityUnit MotorVelocity(VelocityUnit velocity) const;
+  AngularVelocity MotorVelocity(LinearVelocity velocity) const;
 
-  AccelerationUnit Acceleration(VelocityUnit velocity,
-                                VoltageUnit voltage) const;
+  LinearAcceleration Acceleration(LinearVelocity velocity,
+                                  Voltage voltage) const;
 
-  ForceUnit Force(VelocityUnit velocity, VoltageUnit voltage) const;
+  quantities::Force Force(LinearVelocity velocity, Voltage voltage) const;
 
   // TODO(hayden): Move to a different class
   template <class State>

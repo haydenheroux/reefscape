@@ -1,21 +1,21 @@
 #pragma once
 
-#include "units.hh"
+#include "au/units/meters.hh"
 
 namespace reefscape {
 
-struct Pixels : decltype(Meters{} / mag<256>()) {
+struct Pixels : decltype(au::Meters{} / au::mag<256>()) {
   static constexpr const char label[] = "px";
 };
-constexpr auto pixel = SingularNameFor<Pixels>{};
-constexpr auto pixels = QuantityMaker<Pixels>{};
-constexpr auto pixels_pt = QuantityPointMaker<Pixels>{};
+constexpr auto pixel = au::SingularNameFor<Pixels>{};
+constexpr auto pixels = au::QuantityMaker<Pixels>{};
+constexpr auto pixels_pt = au::QuantityPointMaker<Pixels>{};
 
-struct RaylibUnits : decltype(Meters{} / mag<4>()) {
+struct RaylibUnits : decltype(au::Meters{} / au::mag<4>()) {
   static constexpr const char label[] = "vu";
 };
-constexpr auto raylib_unit = SingularNameFor<RaylibUnits>{};
-constexpr auto raylib_units = QuantityMaker<RaylibUnits>{};
-constexpr auto raylib_unit_pt = QuantityPointMaker<RaylibUnits>{};
+constexpr auto raylib_unit = au::SingularNameFor<RaylibUnits>{};
+constexpr auto raylib_units = au::QuantityMaker<RaylibUnits>{};
+constexpr auto raylib_unit_pt = au::QuantityPointMaker<RaylibUnits>{};
 
 };  // namespace reefscape

@@ -3,6 +3,7 @@
 #include "input.hh"
 #include "ntcore_c.h"
 #include "state.hh"
+#include "units.hh"
 
 namespace reefscape {
 
@@ -32,15 +33,15 @@ struct Subscriber {
 
   Subscriber(NT_Inst instance);
 
-  DisplacementUnit Position() const;
+  quantities::Displacement Position() const;
 
-  VelocityUnit Velocity() const;
+  quantities::LinearVelocity Velocity() const;
 
-  DisplacementUnit ReferencePosition() const;
+  quantities::Displacement ReferencePosition() const;
 
-  VelocityUnit ReferenceVelocity() const;
+  quantities::LinearVelocity ReferenceVelocity() const;
 
-  VoltageUnit Voltage() const;
+  quantities::Voltage Voltage() const;
 
   bool AtGoal() const;
 };

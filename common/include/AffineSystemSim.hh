@@ -6,6 +6,8 @@
 
 namespace reefscape {
 
+using namespace quantities;
+
 template <class StateType, class InputType>
   requires HasDimension<StateType> && HasDimension<InputType>
 class AffineSystemSim {
@@ -15,7 +17,7 @@ class AffineSystemSim {
  public:
   AffineSystemSim(SystemMatrix<States> continuous_system,
                   InputMatrix<States, Inputs> continuous_input,
-                  StateVector<States> continuous_constant, TimeUnit time_step)
+                  StateVector<States> continuous_constant, Time time_step)
       : continuous_system_(continuous_system),
         continuous_input_(continuous_input),
         continuous_constant_(continuous_constant),
@@ -31,13 +33,14 @@ class AffineSystemSim {
                               continuous_constant_;
   }
 
-  AffineSystemSim(const Elevator &elevator, AccelerationUnit gravity,
-                  TimeUnit time_step)
+  AffineSystemSim(const Elevator &elevator, LinearAcceleration gravity,
+                  Time time_step)
       : AffineSystemSim(
             elevator.ContinuousSystemMatrix<StateType>(),
             elevator.ContinuousInputMatrix<StateType, InputType>(),
             // TODO(hayden): This isn't compatible with other state types
-            StateVector<States>{0, gravity.in(meters / squared(second))},
+            StateVector<States>{0,
+                                gravity.in(au::meters / squared(au::second))},
             time_step) {}
 
   void Update(InputType input) {

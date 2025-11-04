@@ -5,19 +5,21 @@
 
 namespace reefscape {
 
-struct Motor {
-  VoltageUnit nominal_voltage_;
-  TorqueUnit stall_torque_;
-  CurrentUnit stall_current_;
-  AngularVelocityUnit free_speed_;
-  CurrentUnit free_current_;
-  TorqueConstantUnit torque_constant_;
-  ResistanceUnit resistance_;
-  AngularVelocityConstantUnit angular_velocity_constant_;
+using namespace quantities;
 
-  constexpr Motor(VoltageUnit nominal_voltage, TorqueUnit stall_torque,
-                  CurrentUnit stall_current, AngularVelocityUnit free_speed,
-                  CurrentUnit free_current)
+struct Motor {
+  Voltage nominal_voltage_;
+  Torque stall_torque_;
+  Current stall_current_;
+  AngularVelocity free_speed_;
+  Current free_current_;
+  TorqueConstant torque_constant_;
+  Resistance resistance_;
+  AngularVelocityConstant angular_velocity_constant_;
+
+  constexpr Motor(Voltage nominal_voltage, Torque stall_torque,
+                  Current stall_current, AngularVelocity free_speed,
+                  Current free_current)
       : nominal_voltage_(nominal_voltage),
         stall_torque_(stall_torque),
         stall_current_(stall_current),
@@ -35,13 +37,13 @@ struct Motor {
   }
 
   static constexpr Motor KrakenX60() {
-    return {volts(12), newton_meters(7.09), amperes(366),
-            (revolutions / minute)(6000), amperes(2)};
+    return {au::volts(12), units::newton_meters(7.09), au::amperes(366),
+            (au::revolutions / au::minute)(6000), au::amperes(2)};
   }
 
   static constexpr Motor KrakenX60FOC() {
-    return {volts(12), newton_meters(9.37), amperes(483),
-            (revolutions / minute)(5800), amperes(2)};
+    return {au::volts(12), units::newton_meters(9.37), au::amperes(483),
+            (au::revolutions / au::minute)(5800), au::amperes(2)};
   }
 };
 

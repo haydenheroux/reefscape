@@ -6,35 +6,37 @@
 
 namespace reefscape {
 
-LinearVelocityCoefficientUnit Elevator::VelocityCoefficient() const {
-  return -1 * (gear_ratio * gear_ratio * motor.torque_constant_ * radians(1)) /
+LinearVelocityCoefficient Elevator::VelocityCoefficient() const {
+  return -1 *
+         (gear_ratio * gear_ratio * motor.torque_constant_ * au::radians(1)) /
          (motor.resistance_ * drum_radius * drum_radius * mass *
           motor.angular_velocity_constant_);
 }
 
-LinearVoltageCoefficientUnit Elevator::VoltageCoefficient() const {
+LinearVoltageCoefficient Elevator::VoltageCoefficient() const {
   return (gear_ratio * motor.torque_constant_) /
          (motor.resistance_ * mass * drum_radius);
 }
 
-AngularVelocityUnit Elevator::MotorVelocity(VelocityUnit velocity) const {
-  return velocity * radians(1) * gear_ratio / drum_radius;
+AngularVelocity Elevator::MotorVelocity(LinearVelocity velocity) const {
+  return velocity * au::radians(1) * gear_ratio / drum_radius;
 }
 
-AccelerationUnit Elevator::Acceleration(VelocityUnit velocity,
-                                        VoltageUnit voltage) const {
+LinearAcceleration Elevator::Acceleration(LinearVelocity velocity,
+                                          Voltage voltage) const {
   return Force(velocity, voltage) / mass;
 }
 
-ForceUnit Elevator::Force(VelocityUnit velocity, VoltageUnit voltage) const {
-  ForceUnit voltage_force = (gear_ratio * motor.torque_constant_ * voltage) /
-                            (motor.resistance_ * drum_radius);
+quantities::Force Elevator::Force(LinearVelocity velocity,
+                                  Voltage voltage) const {
+  auto voltage_force = (gear_ratio * motor.torque_constant_ * voltage) /
+                       (motor.resistance_ * drum_radius);
 
-  ForceUnit back_emf_force = -1 *
-                             (gear_ratio * gear_ratio * motor.torque_constant_ *
-                              velocity * radians(1)) /
-                             (motor.resistance_ * drum_radius * drum_radius *
-                              motor.angular_velocity_constant_);
+  auto back_emf_force = -1 *
+                        (gear_ratio * gear_ratio * motor.torque_constant_ *
+                         velocity * au::radians(1)) /
+                        (motor.resistance_ * drum_radius * drum_radius *
+                         motor.angular_velocity_constant_);
 
   return voltage_force + back_emf_force;
 }
@@ -44,7 +46,8 @@ SystemMatrix<PositionVelocityState::Dimension>
 Elevator::ContinuousSystemMatrix<PositionVelocityState>() const {
   SystemMatrix<PositionVelocityState::Dimension> result;
   result << 0, 1, 0,
-      VelocityCoefficient().in((meters / squared(second)) / (meters / second));
+      VelocityCoefficient().in((au::meters / squared(au::second)) /
+                               (au::meters / au::second));
   return result;
 }
 
@@ -52,7 +55,8 @@ template <>
 InputMatrix<PositionVelocityState::Dimension, VoltageInput::Dimension>
 Elevator::ContinuousInputMatrix<PositionVelocityState, VoltageInput>() const {
   InputMatrix<PositionVelocityState::Dimension, VoltageInput::Dimension> result;
-  result << 0, VoltageCoefficient().in((meters / squared(second)) / volt);
+  result << 0,
+      VoltageCoefficient().in((au::meters / squared(au::second)) / au::volt);
   return result;
 }
 
