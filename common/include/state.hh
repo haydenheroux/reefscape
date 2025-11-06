@@ -16,23 +16,30 @@ struct PositionVelocityState {
     SetPosition(position);
     SetVelocity(velocity);
   }
-  PositionVelocityState(const StateVector<Dimension> &state) {
-    SetPosition(au::meters(state[0]));
-    SetVelocity((au::meters / au::second)(state[1]));
-  }
-  PositionVelocityState &operator=(const StateVector<Dimension> &state) {
+
+  PositionVelocityState(Displacement position)
+      : PositionVelocityState(position, (au::meters / au::second)(0)) {}
+
+  PositionVelocityState(const StateVector<Dimension>& state)
+      : PositionVelocityState(au::meters(state[0]),
+                              (au::meters / au::second)(0)) {}
+
+  PositionVelocityState& operator=(const StateVector<Dimension>& state) {
     this->vector[0] = state[0];
     this->vector[1] = state[1];
     return *this;
   }
 
   Displacement Position() const { return au::meters(vector[0]); }
+
   LinearVelocity Velocity() const {
     return (au::meters / au::second)(vector[1]);
   }
+
   void SetPosition(Displacement position) {
     vector[0] = position.in(au::meters);
   }
+
   void SetVelocity(LinearVelocity velocity) {
     vector[1] = velocity.in(au::meters / au::second);
   }

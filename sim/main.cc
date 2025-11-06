@@ -47,10 +47,8 @@ int main() {
   // TODO(hayden): Determine if it is possible to avoid explicit declaration
   TrapezoidTrajectory<units::DisplacementUnit> profile{elevator};
 
-  // TODO(hayden): State constructors with only position, no velocity
-  State top{kTotalTravel, (au::meters / au::second)(0)};
-  // TODO(hayden): Zero state constructor
-  State bottom{au::meters(0), (au::meters / au::second)(0)};
+  State top{kTotalTravel};
+  State bottom{au::meters(0)};
 
   State reference = bottom;
   State goal = top;
