@@ -45,7 +45,7 @@ int main() {
       kD.in(au::volts / (au::meters / au::second));
 
   // TODO(hayden): Determine if it is possible to avoid explicit declaration
-  TrapezoidTrajectory<Elevator, units::DisplacementUnit> profile{elevator};
+  TrapezoidTrajectory<units::DisplacementUnit> profile{elevator};
 
   // TODO(hayden): State constructors with only position, no velocity
   State top{kTotalTravel, (au::meters / au::second)(0)};

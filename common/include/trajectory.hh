@@ -6,13 +6,14 @@
 
 namespace reefscape {
 
-template <typename System, typename NativeUnit>
-  requires MotorSystem<System, NativeUnit>
+template <typename NativeUnit>
 struct TrapezoidTrajectory {
   au::QuantityD<units::Velocity<NativeUnit>> max_velocity;
   au::QuantityD<units::Acceleration<NativeUnit>> max_acceleration;
 
-  TrapezoidTrajectory(const System &system)
+  template <typename System>
+    requires MotorSystem<System, NativeUnit>
+  TrapezoidTrajectory(const System& system)
       : max_velocity(MaximumVelocity<System, NativeUnit>(system)),
         max_acceleration(MaximumAcceleration<System, NativeUnit>(system)) {}
 
